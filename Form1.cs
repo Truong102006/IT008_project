@@ -12,8 +12,12 @@ namespace LapTrinhTrucQuangProjectTest
     {
         // ===== GAME =====
         Bitmap platformImg;
+        Bitmap backgroundImg; // biến chứa ảnh nền (GIF hoặc PNG đều được)
         bool goLeft, goRight, jumping, onGround, levelTransitioning;
         int jumpSpeed = 0, force = 24, gravity = 8, playerSpeed = 3, currentLevel = 1;
+        int maxHealth = 100;     // Máu tối đa
+        int currentHealth = 100; // Máu hiện tại
+        bool isGameOver = false;
         int startX;
         int startY;
         Rectangle player, door;
@@ -30,7 +34,7 @@ namespace LapTrinhTrucQuangProjectTest
         // Tinh chỉnh hitbox (px): co bớt trên/dưới + trước/sau (mặt trước co nhiều hơn)
         const int HB_TOP = 11, HB_BOTTOM = 1;
         const int HB_BACK = 2, HB_FRONT = 17;
-       
+
 
 
         // ===== ANIM ===== (chỉ Run & Jump)
@@ -50,7 +54,7 @@ namespace LapTrinhTrucQuangProjectTest
 
             public void Update(double dt) // dt là thời gian mà mỗi lần update máy đã chạy được
             {
-                if (Sheet == null || Frames.Count == 0 || FPS <= 0) return; //kiểm tra lỗi 
+                if (Sheet == null || Frames.Count == 0 || FPS <= 0) return;
                 _accum += dt; // mỗi lần update thì cộng số thời gian đã chạy bởi máy vào _accum
                 double spf = 1.0 / FPS; // thời gian để chiếu 1 khung hình ( 1.0 / 10FPS = 0.1s-> mỗi 0.1s chiếu 1 khung hình nếu muốn 10FPS )
                 while (_accum >= spf) // nếu máy đã update _accum lên đủ thời gian để hiện ra hình animation tiếp theo ( _accum = 0.1s thì đủ chạy 1 khung hình )
@@ -82,7 +86,7 @@ namespace LapTrinhTrucQuangProjectTest
                 int h = (int)(src.Height * scale);
                 int x = hitbox.X + (hitbox.Width - w) / 2;
                 int y = hitbox.Bottom - h; // dùng kích thước w,h của hình src để căn cho nhân vật nằm giữa hitbox bằng cách tính vị trí x,y trong hitbox để đặt ảnh nhân vật cho vừa khung hình. 
-                
+
                 // nếu nhân vật nhìn sang trái thì lật hình sang trái:
                 var st = g.Save(); // 1. lưu trạng thái bình thường của game trước khi lật
                 if (!facingRight) // 2. Nếu đang nhìn sang trái
@@ -91,7 +95,7 @@ namespace LapTrinhTrucQuangProjectTest
                     g.ScaleTransform(-1, 1); // Lật ngược trục X (soi gương)
                     g.TranslateTransform(-(x + w / 2f), 0); // Dời tâm về chỗ cũ
                 }
-                
+
                 g.DrawImage(sheet, new Rectangle(x, y, w, h), src, GraphicsUnit.Pixel); // cắt phần hình src từ sheet cần thiết và vẽ hình đó với chiều rộng w bắt đầu từ x và chiều dài h bắt đầu từ y:
                 g.Restore(st); // dòng này để khôi phục lại trạng thái bình thường nếu đang vẽ quay sang trái để vẽ cái khác không bị ngược.
             }
@@ -109,7 +113,7 @@ namespace LapTrinhTrucQuangProjectTest
         SpriteAnim idleAnim = new SpriteAnim { FPS = 6, Loop = true };
 
 
-        AnimState currentState = AnimState.Idle; 
+        AnimState currentState = AnimState.Idle;
         SpriteAnim currentAnim;
         bool facingRight = true;
         readonly Stopwatch sw = new Stopwatch(); // dùng để do dt chính xác
@@ -161,7 +165,7 @@ namespace LapTrinhTrucQuangProjectTest
             // nạp ảnh vào biến platformImg, nếu không nạp được ảnh thì sẽ vẽ màu nâu thay thế
         }
         // ===== LOAD HELPERS =====
-        
+
         // hàm chính để quản lí các hàm điều chỉnh frame khác tạo thành một hoạt ảnh hoàn chỉnh:
         private void LoadAnimationEven(string path, SpriteAnim anim, int frameCount, int alphaThreshold, bool tightenEdges)
         {
@@ -182,7 +186,7 @@ namespace LapTrinhTrucQuangProjectTest
                 if (tightenEdges)
                     frames = TightenHorizontal(anim.Sheet, frames, alphaThreshold);
                 // B3: nếu tightenEdges = true thì gọi hàm cắt ngang để cắt bớt phần thừa 2 bên hông của từng khung hình, còn nếu không muốn cắt bỏ thì lúc nạp hình để tightenEdges là false
-                
+
                 for (int i = 0; i < frames.Count; i++)
                     frames[i] = new Rectangle(frames[i].Left, top, frames[i].Width, height);
                 // B4: với mỗi frame ta thay thế chúng với một rectangle mới với các thông số sau:
@@ -207,7 +211,7 @@ namespace LapTrinhTrucQuangProjectTest
         }
 
         // hàm cắt các frame ra từ hình tổng hợp:
-        private List<Rectangle> SplitEven(Bitmap bmp, int frameCount) 
+        private List<Rectangle> SplitEven(Bitmap bmp, int frameCount)
         {
             var frames = new List<Rectangle>();
             // tạo một danh sách lưu trữ các frame cắt ra từ ảnh gốc
@@ -228,7 +232,7 @@ namespace LapTrinhTrucQuangProjectTest
         }
 
         // hàm đồng bộ chiều cao GetGlobalVerticalBounds, tìm đỉnh đầu cao nhất và điểm dưới chân thấp nhất của nhân vật để đồng bộ để tránh nhân vật bị giật lên giật xuống lúc chạy:
-        private Tuple<int, int> GetGlobalVerticalBounds(Bitmap bmp, int alphaThreshold) 
+        private Tuple<int, int> GetGlobalVerticalBounds(Bitmap bmp, int alphaThreshold)
         {
             int top = int.MaxValue, bottom = -1;
             // đặt cột mốc ban đầu là giá trị cực đại và cực tiểu để làm điểm tựa
@@ -236,11 +240,11 @@ namespace LapTrinhTrucQuangProjectTest
                 for (int x = 0; x < bmp.Width; x++) // quét từng điểm (X) từ trái sang phải
                     if (bmp.GetPixel(x, y).A > alphaThreshold)
                     // kiểm tra điểm có nhìn thấy được không: nếu A (độ đục của điểm) > ngưỡng quy định -> là điểm ảnh có màu
-                    { 
+                    {
                         // nếu dòng này cao hơn top thì cập nhật top hiện tại
-                        if (y < top) top = y; 
+                        if (y < top) top = y;
                         // nếu dòng này thấp hơn bottom thì cập nhật bottom
-                        if (y > bottom) bottom = y; 
+                        if (y > bottom) bottom = y;
                     }
             // nếu ảnh không có điểm nào thấy được thì lấy chiều cao gốc của ảnh
             if (bottom < top) { top = 0; bottom = bmp.Height - 1; }
@@ -258,8 +262,8 @@ namespace LapTrinhTrucQuangProjectTest
                 for (int x = s.Left; x < s.Right; x++)
                     for (int y = s.Top; y < s.Bottom; y++) // quét trong phạm vi frame
                         if (bmp.GetPixel(x, y).A > alphaThreshold) // kiểm tra pixel có màu hay không
-                        { 
-                            if (x < minX) minX = x; 
+                        {
+                            if (x < minX) minX = x;
                             if (x > maxX) maxX = x;
                             // tìm mép trái nhất và mép phải nhất có chứa frame
                         }
@@ -270,7 +274,35 @@ namespace LapTrinhTrucQuangProjectTest
             }
             return result;
         }
+        // Hàm nạp background (Hỗ trợ cả GIF động)
+        private void LoadBackground(string path)
+        {
+            try
+            {
+                // 1. Xóa ảnh nền cũ nếu có (để tiết kiệm RAM khi qua màn)
+                if (backgroundImg != null)
+                {
+                    ImageAnimator.StopAnimate(backgroundImg, (s, e) => { }); // Dừng chạy hình cũ
+                    backgroundImg.Dispose();
+                    backgroundImg = null;
+                }
 
+                // 2. Nạp ảnh mới
+                if (File.Exists(path))
+                {
+                    backgroundImg = (Bitmap)Image.FromFile(path);
+
+                    // 3. QUAN TRỌNG: Kích hoạt chế độ hoạt hình cho GIF
+                    if (ImageAnimator.CanAnimate(backgroundImg))
+                    {
+                        // Hàm này bảo: "Mỗi khi đến lúc đổi khung hình, không cần làm gì cả"
+                        // (Vì GameLoop của chúng ta đã tự vẽ lại 60 lần/giây rồi)
+                        ImageAnimator.Animate(backgroundImg, (s, e) => { });
+                    }
+                }
+            }
+            catch { }
+        }
         // ===== WINDOW & GAME LOOP =====
         private void UpdateScale()
         {
@@ -335,8 +367,8 @@ namespace LapTrinhTrucQuangProjectTest
             foreach (var p in platforms) // lấy hitbox thử nghiệm afterX đó cho va chạm với tất cả platforms
             {
                 if (!afterX.IntersectsWith(p)) continue; // nếu không chạm vào platform đó thì continue
-                // nếu có chạm ( nghĩa là bước đi đã khiến hitbox dính vào tường hoặc vào đất thì sẽ xét như bên dưới )
-                
+                                                         // nếu có chạm ( nghĩa là bước đi đã khiến hitbox dính vào tường hoặc vào đất thì sẽ xét như bên dưới )
+
                 // Chỉ chặn khi ta đang ở "dưới" bệ (đỉnh hitbox cao hơn/touch đáy bệ)
                 bool underCeilingNow = afterX.Top < p.Bottom; // kiểm tra đầu của hitbox sau khi di chuyển có đang nằm thấp hơn đáy cục gạch không
                 // underCeilingNow nếu đúng thì nghĩa là thân nhân vật đang nằm ngang với cục gạch ( đụng tường )
@@ -344,7 +376,7 @@ namespace LapTrinhTrucQuangProjectTest
                 bool underCeilingPrev = prevColl.Top < p.Bottom; // kiểm tra tương tự với hitbox lúc trước khi di chuyển  
 
                 if (underCeilingNow && underCeilingPrev)
-                    // nếu lúc trước khi di chuyển và sau khi di chuyển mà thân nhân vật đều đang đụng tường thì làm như sau:
+                // nếu lúc trước khi di chuyển và sau khi di chuyển mà thân nhân vật đều đang đụng tường thì làm như sau:
                 {
                     player.X = oldX; // phát hiện đụng tường => quay lại oldX ngay lập tức
                     afterX = GetCollRect(player, facingRight); // cập nhật lại hitbox thử nghiệm cho các lần thử tiếp theo
@@ -377,7 +409,7 @@ namespace LapTrinhTrucQuangProjectTest
                     // crossedBottom dùng để kiểm tra đầu nhân vật có xuyên qua platform không, tức là đang nhảy từ dưới lên xuyên qua platform
 
                     if (overlapX && crossedBottom) // nếu nhân vật đang ngang hàng với platform và nhân vật vừa mới nhảy xuyên qua đáy
-                    {                     
+                    {
                         player.Y = p.Bottom - HB_TOP;
                         // cho đầu nhân vật ghim vào ngay dưới đáy platform
                         coll = GetCollRect(player, facingRight);
@@ -393,24 +425,23 @@ namespace LapTrinhTrucQuangProjectTest
 
             // ---- BẮT ĐẤT ỔN ĐỊNH: chỉ đáp khi cắt qua mặt trên; keepStick chỉ cho "cùng bệ" ----
             // Logic vật lý tiếp đất, giúp nhân vật không bị trượt, không bị rơi xuyên sàn và đứng được trên mép vực
-            
+
             bool wasGrounded = onGround;
             // lưu trạng thái tiếp đất của nhân vật
             onGround = false;
-           
+
             int prevBottom = prevColl.Bottom;
             // lưu vị trí chân cũ
-
             int bottom = coll.Bottom;
             // vị trí chân hiện tại
 
             // những chỉ số dưới đây giúp game dễ nhảy hơn và bỏ qua lỗi sai của người chơi nhiều hơn, kéo dài thêm các chỉ số hitbox một tí để người chơi không bị rớt vì lệch một tí pixel:
             int footSpan = Math.Max(12, coll.Width * 2 / 3);
             // chiều rộng bàn chân của nhân vật nhỏ hơn chiều rộng nhân vật thực tế
-            
+
             int edgeGrace = 4;
             //mở rộng hitbox của platform ra thêm 4px ở hai bên, giúp nhân vật dễ dàng chạm vào mép platform
-            
+
             int keepTol = 5;
             // 5 pixel là khoảng cách tối đa mà chân được phép hở khỏi mặt đất mà vẫn không rớt
 
@@ -456,7 +487,7 @@ namespace LapTrinhTrucQuangProjectTest
 
                 bool keepStick =
                     wasGrounded && !rising && // nếu đang đứng vững và đang không nhảy lên
-                    Math.Abs(prevBottom - p.Top) <= keepTol && 
+                    Math.Abs(prevBottom - p.Top) <= keepTol &&
                     Math.Abs(bottom - p.Top) <= keepTol && // khoảng cách chân lúc trước và lúc sau đều phải nhỏ hơn dung sai tối đa để đứng trên platform
                     (overlap >= needStickOverlap); // chân nhân vật phải chồng lên platform ít nhất bằng diện tích tối thiểu cần thiết để đứng vững
 
@@ -469,13 +500,13 @@ namespace LapTrinhTrucQuangProjectTest
                     // nên muốn vị trí coll.Bottom = p.Top, ta phải làm cho đỉnh của nhân vật, tức là player.Y = p.Top - (coll.Height + HB_TOP)
                     // tức là đỉnh của nhân vật = đỉnh của mặt phẳng đi lên một khoảng bằng chiều cao tổng thể
                     // từ đó ta có được coll.Bottom hay chân của hitbox sẽ ngang hàng với đỉnh của mặt phẳng hay p.Top
-                    
+
                     coll = GetCollRect(player, facingRight);
                     //tính toán lại hitbox lần cuối, sử dụng vị trí player.Y mới
 
                     onGround = true; // đã chạm đất vì đang đứng trên platform
                     groundedIndex = i; // ghi lại vị trí bệ đang đứng dùng cho keepStick cho frame tiếp theo
-                    jumping = false; 
+                    jumping = false;
                     jumpSpeed = 0;
                     // triệt tiêu toàn bộ lực nhảy và trạng thái nhảy vì đã tiếp đất thành công
                     break;
@@ -492,25 +523,39 @@ namespace LapTrinhTrucQuangProjectTest
             if (player.Right > baseWidth) player.X = baseWidth - player.Width; // chặn ở mép phải
             if (player.Y > baseHeight) // rớt xuống vực
             {
+                // 1. Trừ máu
+                currentHealth -= 100; // Trừ thẳng 100 máu (như ý bạn muốn sau này làm Boss)
+
+                // 2. Hồi sinh về vị trí cũ
                 player.X = startX;
                 player.Y = startY;
+
+                // 3. Reset vật lý
                 jumping = false;
                 jumpSpeed = 0;
                 goLeft = false;
                 goRight = false;
-                MessageBox.Show("gà");
+
+                // 4. Kiểm tra Chết (Hết máu)
+                if (currentHealth <= 0)
+                {
+                    currentHealth = 0; // Chốt máu về 0
+                    isGameOver = true; // Bật chế độ Game Over
+                    gameTimer.Stop();  // Dừng game lại
+                    Invalidate();      // Vẽ lại màn hình lần cuối để hiện chữ Game Over
+                    return;            // Thoát hàm luôn
+                }
             }
-            // nếu nhân vật rớt xuống vực thì cho nhân vật spawn lại vị trí ban đầu khi vừa qua màn và ngừng mọi thao tác di chuyển
 
 
             // Cửa
             if (coll.IntersectsWith(door) && !levelTransitioning)
-            { 
-                levelTransitioning = true; 
+            {
+                levelTransitioning = true;
                 NextLevel();
                 goLeft = false;
                 goRight = false;
-                jumping = false; 
+                jumping = false;
                 jumpSpeed = 0;
             }
             // levelTransitioning là một flag để NextLevel() được gọi một lần duy nhất chứ không gọi 60 lần/s khi nhân vật đứng trong cửa
@@ -519,15 +564,15 @@ namespace LapTrinhTrucQuangProjectTest
 
             bool inAir = jumping || !onGround;
             // nếu đang nhảy hoặc không ở trên mặt đất thì 
-            bool movingNow = (player.X != prevX);   
+            bool movingNow = (player.X != prevX);
             // chỉ coi là chạy khi X thực sự đổi
 
             AnimState desired = inAir ? AnimState.Jump : (movingNow ? AnimState.Run : AnimState.Idle);
             // lựa chọn anim phù hợp cho mỗi desired state
-            
+
             if (desired != currentState) SwitchState(desired);
             // nếu trạng thái mới khác trạng thái hiện tại thì gọi hàm chuyển trạng thái
-                        
+
             currentAnim?.Update(dt);
             // gọi hàm tính toán thời gian cho bột animation hiện tại để chuyển khung hình
 
@@ -536,7 +581,7 @@ namespace LapTrinhTrucQuangProjectTest
 
             Invalidate();
             // gửi yêu cầu vẽ lại toàn bộ Form, kích hoạt hàm OnPaint() để hiển thị mọi thay đổi về vị trí, hình ảnh và trạng thái 
-        }     
+        }
 
         private void SwitchState(AnimState s)
         {
@@ -554,6 +599,20 @@ namespace LapTrinhTrucQuangProjectTest
         // ===== INPUT =====
         private void KeyIsDown(object sender, KeyEventArgs e)
         {
+            if (isGameOver)
+            {
+                if (e.KeyCode == Keys.Enter)
+                {
+                    // Reset game khi bấm Enter
+                    isGameOver = false;
+                    currentHealth = maxHealth;
+                    CreateLevel1(); // Hoặc load lại level hiện tại tùy bạn
+                    currentLevel = 1; // Reset về màn 1 (nếu muốn)
+                    gameTimer.Start();
+                }
+                return; // Không làm gì khác khi đang Game Over
+            }
+
             if (e.KeyCode == Keys.Left || e.KeyCode == Keys.A) goLeft = true;
             if (e.KeyCode == Keys.Right || e.KeyCode == Keys.D) goRight = true;
 
@@ -605,7 +664,7 @@ namespace LapTrinhTrucQuangProjectTest
         private void NextLevel()
         {
             currentLevel++;
-            if (currentLevel > 5) { gameTimer.Stop(); MessageBox.Show("🎉 Bạn đã hoàn thành tất cả các màn!");; return; }
+            if (currentLevel > 5) { gameTimer.Stop(); MessageBox.Show("🎉 Bạn đã hoàn thành tất cả các màn!"); ; return; }
             platforms.Clear();
             // xóa hết dữ liệu platform của màn chơi cũ khỏi bộ nhớ
             switch (currentLevel)
@@ -645,13 +704,14 @@ namespace LapTrinhTrucQuangProjectTest
                 }
             }
             startX = player.X;
-            startY = player.Y;  
+            startY = player.Y;
             // lưu điểm hồi sinh (spawnpoint) của nhân vật
         }
         private void CreateLevel1()
         {
             // 'this' nghĩa là lấy map ngay trên Form1 hiện tại
             LoadMapFromContainer(this);
+            LoadBackground(@"Images\background1.gif");
         }
         private void CreateLevel2()
         {
@@ -688,7 +748,20 @@ namespace LapTrinhTrucQuangProjectTest
         {
             base.OnPaint(e); // gọi hàm vẽ của Windows
             e.Graphics.ScaleTransform(scaleX, scaleY); // áp dụng tỷ lệ scale của hàm UpdateScale cho form, để các nét vẽ đều được scale theo tỷ lệ form
-            e.Graphics.Clear(Color.LightGray); // xóa nội dung bảng vẽ cũ bằng màu nền xám nhạt trước khi vẽ cái mới
+                                                       // 1. Vẽ nền
+            if (backgroundImg != null)
+            {
+                // Cập nhật khung hình GIF dựa trên thời gian thực
+                ImageAnimator.UpdateFrames(backgroundImg);
+
+                // Vẽ ảnh trải đầy màn hình game (baseWidth, baseHeight)
+                e.Graphics.DrawImage(backgroundImg, 0, 0, baseWidth, baseHeight);
+            }
+            else
+            {
+                // Nếu không có ảnh thì dùng màu xám như cũ
+                e.Graphics.Clear(Color.LightGray);
+            }
             e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor; // chế độ phóng to/thu nhỏ hình ảnh, giữ cho pixel vuông vắn, không bị làm mờ khi phóng to
             e.Graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half; // giúp căn chỉnh pixel chính xác hơn, tránh lỗi lệch nửa pixel gây ra hình ảnh bị rung
 
@@ -703,10 +776,11 @@ namespace LapTrinhTrucQuangProjectTest
                 {
                     e.Graphics.FillRectangle(Brushes.SaddleBrown, p); // nếu file ảnh bị lỗi thì vẽ một hình màu nâu thay thế
                 }
-                using (Pen debugPen = new Pen(Color.Red, 2))
-                {
-                    e.Graphics.DrawRectangle(debugPen, p);
-                }
+                // DEBUG: xem hitbox của platform
+                //using (Pen debugPen = new Pen(Color.Red, 2))
+                //{
+                //    e.Graphics.DrawRectangle(debugPen, p);
+                //}
             }
             ;
 
@@ -726,6 +800,75 @@ namespace LapTrinhTrucQuangProjectTest
             //using (var pen = new Pen(Color.Lime, 1f / Math.Max(0.001f, scaleX)))
             //    e.Graphics.DrawRectangle(pen, dbg);
 
+            // ===== VẼ GIAO DIỆN (UI) - THANH MÁU =====
+            // 1. Cấu hình vị trí
+            int barX = 50;  // Dịch sang phải một chút để nhường chỗ cho chữ HP
+            int barY = 20;  // Cách mép trên 20px
+            int barW = 200; // Chiều dài thanh máu
+            int barH = 20;  // Chiều cao thanh máu
+
+            // --- MỚI: VẼ CHỮ "HP" ---
+            // Tạo font chữ: Arial, cỡ 12, in đậm
+            using (Font hpFont = new Font("Arial", 12, FontStyle.Bold))
+            {
+                // Vẽ chữ "HP" màu đỏ, nằm bên trái thanh máu (barX - 40)
+                e.Graphics.DrawString("HP", hpFont, Brushes.Red, barX - 40, barY);
+            }
+            // ------------------------
+
+            // 2. Tính toán độ dài phần máu còn lại
+            float percentage = (float)currentHealth / maxHealth;
+            // Chặn không cho âm (nếu máu <= 0 thì phần trăm là 0)
+            if (percentage <= 0) percentage = 0;
+            int fillW = (int)(barW * percentage);
+
+            // 3. Vẽ nền thanh máu (Màu xám - phần máu đã mất)
+            e.Graphics.FillRectangle(Brushes.Gray, barX, barY, barW, barH);
+
+            // 4. Vẽ lượng máu hiện tại (Màu đỏ tươi)
+            // Nếu máu > 0 thì mới vẽ màu đỏ, nếu = 0 thì fillW = 0 nên không vẽ gì (hiện nền đen)
+            e.Graphics.FillRectangle(Brushes.Red, barX, barY, fillW, barH);
+
+            // 5. Vẽ khung viền cho thanh máu nổi bật
+            using (Pen borderPen = new Pen(Color.White, 2)) // Đổi viền màu trắng cho nổi trên nền đen
+            {
+                e.Graphics.DrawRectangle(borderPen, barX, barY, barW, barH);
+            }
+
+            // ===== VẼ MÀN HÌNH GAME OVER =====
+            if (isGameOver)
+            {
+                // 1. Làm tối màn hình (Vẽ một lớp màu đen trong suốt đè lên game)
+                // Color.FromArgb(150, 0, 0, 0): 150 là độ trong suốt (Alpha)
+                using (SolidBrush brush = new SolidBrush(Color.FromArgb(150, 0, 0, 0)))
+                {
+                    e.Graphics.FillRectangle(brush, 0, 0, baseWidth, baseHeight);
+                }
+
+                // 2. Chữ "GAME OVER"
+                string text1 = "YOU DIED";
+                string text2 = "Nhấn ENTER để chơi lại";
+
+                using (Font font1 = new Font("Arial", 30, FontStyle.Bold))
+                using (Font font2 = new Font("Arial", 16, FontStyle.Regular))
+                {
+                    // 3. Tính toán vị trí CHÍNH GIỮA (Center Alignment)
+                    // Đo kích thước chữ khi vẽ ra
+                    SizeF size1 = e.Graphics.MeasureString(text1, font1);
+                    SizeF size2 = e.Graphics.MeasureString(text2, font2);
+
+                    // Công thức căn giữa: (Chiều rộng Form - Chiều rộng Chữ) / 2
+                    float x1 = (baseWidth - size1.Width) / 2;
+                    float y1 = (baseHeight - size1.Height) / 2 - 30; // Dịch lên một chút
+
+                    float x2 = (baseWidth - size2.Width) / 2;
+                    float y2 = y1 + size1.Height + 10; // Nằm dưới chữ Game Over
+
+                    // 4. Vẽ chữ
+                    e.Graphics.DrawString(text1, font1, Brushes.Red, x1, y1);
+                    e.Graphics.DrawString(text2, font2, Brushes.White, x2, y2);
+                }
+            }
         }
 
         protected override void OnFormClosed(FormClosedEventArgs e)

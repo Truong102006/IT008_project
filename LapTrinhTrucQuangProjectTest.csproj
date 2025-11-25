@@ -116,6 +116,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Images\background1.gif">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Images\platform.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
