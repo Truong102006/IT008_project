@@ -13,6 +13,7 @@ namespace LapTrinhTrucQuangProjectTest
         // ===== GAME =====
         Bitmap platformImg;
         Bitmap backgroundImg; // biến chứa ảnh nền (GIF hoặc PNG đều được)
+        Bitmap gameOverImg;
         bool goLeft, goRight, jumping, onGround, levelTransitioning;
         int jumpSpeed = 0, force = 24, gravity = 8, playerSpeed = 3, currentLevel = 1;
         int maxHealth = 100;     // Máu tối đa
@@ -22,6 +23,8 @@ namespace LapTrinhTrucQuangProjectTest
         int startY;
         Rectangle player, door;
         List<Rectangle> platforms = new List<Rectangle>();
+        List<Tile> tiles = new List<Tile>();
+        Dictionary<string, Bitmap> tileAssets = new Dictionary<string, Bitmap>(); // Khai báo Kho chứa (Dictionary) chứa các ô tilesets, Key (string) là Tag của ô, Value (Bitmap) là hình ảnh của ô        
         Timer gameTimer = new Timer();
 
         readonly int baseWidth = 800, baseHeight = 500;
@@ -33,14 +36,32 @@ namespace LapTrinhTrucQuangProjectTest
 
         // Tinh chỉnh hitbox (px): co bớt trên/dưới + trước/sau (mặt trước co nhiều hơn)
         const int HB_TOP = 11, HB_BOTTOM = 1;
-        const int HB_BACK = 2, HB_FRONT = 17;
-
-
+        const int HB_BACK = 2, HB_FRONT = 17;      
 
         // ===== ANIM ===== (chỉ Run & Jump)
-        enum AnimState { Idle, Run, Jump }
+        enum AnimState { Idle, Run, Jump }        
 
+        // Khuôn mẫu cho ô gạch/địa hình mới:
+        class Tile
+        {
+            public Rectangle Rect; // Vị trí và kích thước
+            public string Type;    // Loại (tag), ví dụ: "tile_1", "tile_2"
 
+            public Tile(int x, int y, int w, int h, string type)
+            {
+                Rect = new Rectangle(x, y, w, h);
+                Type = type;
+            }
+        }
+        // Thuộc tính ảo: Tự động nối 2 danh sách lại mỗi khi được gọi, dùng thuộc tính AllSolids này để gộp các thuộc tính của tiles và platforms lại với nhau để xử lí va chạm vì chúng có chung tính chất đều là vật thể rắn trong game
+        private IEnumerable<Rectangle> Solid
+        {
+            get
+            {
+                foreach (var p in platforms) yield return p;   // Lấy nền cũ
+                foreach (var t in tiles) yield return t.Rect; // Lấy nền mới
+            }
+        }
         class SpriteAnim
         {
             public Bitmap Sheet; // hình tổng thể của toàn bộ các khung hình cần cho animation
@@ -101,6 +122,23 @@ namespace LapTrinhTrucQuangProjectTest
             }
         }
 
+        // Hàm AddTileImage() dùng để thêm ảnh vào cho các ô tilesets để thiết kế map: lấy hình ảnh từ đường dẫn Images\fileName (path) sau đó gán hình ảnh đó vào tag ta muốn.
+        private void AddTileImage(string tag, string fileName)
+        {
+            try
+            {
+                string path = @"Images\" + fileName;
+                if (File.Exists(path))
+                {
+                    // Nếu dictionary đã chứa tag thì cập nhật, chưa có thì thêm mới
+                    if (tileAssets.ContainsKey(tag))
+                        tileAssets[tag] = (Bitmap)Image.FromFile(path);
+                    else
+                        tileAssets.Add(tag, (Bitmap)Image.FromFile(path));
+                }
+            }
+            catch { }
+        }
 
         // File ảnh
         private readonly string RunPath = @"Images\Punk_run.png";
@@ -159,13 +197,22 @@ namespace LapTrinhTrucQuangProjectTest
             // tính toán tỷ lệ scale cho lần vẽ hình đầu tiên
             this.Shown += (s, _) => UpdateScale();
             // gọi lại updatescale để tính toán lại những sai lệch nhỏ nếu có ở lần 1 sau khi show
+            AddTileImage("tile_1", "tile_1.png");
+            AddTileImage("tile_2", "tile_2.png");
+            AddTileImage("tile_3", "tile_3.png");
+            AddTileImage("tile_4", "tile_4.png");
+            AddTileImage("tile_5", "tile_5.png");
+            AddTileImage("tile_6", "tile_6.png");
+            // nạp hình các tiles vào với các tag tương ứng cho panel
             try
             {
                 if (File.Exists(@"Images\platform.png"))
                     platformImg = (Bitmap)Image.FromFile(@"Images\platform.png");
+                if (File.Exists(@"Images\GameOverFont_2.png"))
+                    gameOverImg = (Bitmap)Image.FromFile(@"Images\GameOverFont_2.png");
             }
-            catch { }
-            // nạp ảnh vào biến platformImg, nếu không nạp được ảnh thì sẽ vẽ màu nâu thay thế
+            catch { }            
+            // nạp ảnh vào biến platformImg và biến gameOverImg, nếu không nạp được ảnh thì sẽ vẽ màu nâu thay thế
         }
         // ===== LOAD HELPERS =====
 
@@ -367,7 +414,7 @@ namespace LapTrinhTrucQuangProjectTest
             int oldX = prevX; // vị trí X trước khi bước
             Rectangle afterX = GetCollRect(player, facingRight); // đây là hitbox thử nghiệm được máy tạo ra để thử việc va chạm với các platforms xem có bị dính vào tường hay không 
 
-            foreach (var p in platforms) // lấy hitbox thử nghiệm afterX đó cho va chạm với tất cả platforms
+            foreach (var p in Solid) // lấy hitbox thử nghiệm afterX đó cho va chạm với tất cả platforms
             {
                 if (!afterX.IntersectsWith(p)) continue; // nếu không chạm vào platform đó thì continue
                                                          // nếu có chạm ( nghĩa là bước đi đã khiến hitbox dính vào tường hoặc vào đất thì sẽ xét như bên dưới )
@@ -401,7 +448,7 @@ namespace LapTrinhTrucQuangProjectTest
 
             if (player.Y < prevY) // chỉ xét nếu nhân vật đang nhảy lên
             {
-                foreach (var p in platforms)
+                foreach (var p in Solid)
                 {
                     bool overlapX = coll.Right > p.Left && coll.Left < p.Right;
                     // overlapX được dùng để kiểm tra nhân vật và platform có va chạm nhau hay chồng lên nhau hay không
@@ -463,10 +510,19 @@ namespace LapTrinhTrucQuangProjectTest
             bool rising = player.Y < prevY;
             // hai biến này dùng để phân biệt đang nhảy hay đang rớt xuống dùng để phân biệt va chạm trần với va chạm đất
 
+            // Tạo một list tạm để chứa tất cả vật thể rắn:
+            var Objects = new List<Rectangle>();
 
-            for (int i = 0; i < platforms.Count; i++)
+            // Thêm platform cũ vào trước (giữ nguyên thứ tự để groundedIndex không bị loạn):
+            foreach (var p in platforms) Objects.Add(p);
+
+            // Thêm tiles mới vào sau (lấy .Rect của từng tile):
+            foreach (var t in tiles) Objects.Add(t.Rect);
+
+            // Hàm tiếp đất dành cho platforms và tiles:
+            for (int i = 0; i < Objects.Count; i++)
             {
-                var p = platforms[i];
+                var p = Objects[i];
 
                 int pLeft = p.Left - edgeGrace;
                 int pRight = p.Right + edgeGrace;
@@ -600,6 +656,11 @@ namespace LapTrinhTrucQuangProjectTest
             currentAnim?.Reset(); // reset khung hình sau khi chuyển trạng thái
         }
 
+        private void panel11_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
 
         // ===== INPUT =====
         private void KeyIsDown(object sender, KeyEventArgs e)
@@ -643,7 +704,7 @@ namespace LapTrinhTrucQuangProjectTest
             Rectangle c = GetCollRect(player, facingRight);
             Rectangle feet = new Rectangle(c.X, c.Bottom, c.Width, 2);
             // tạo một hitbox giả định của chân chỉ cao 2 pixel, còn lại giữ chỉ số của hitbox chính
-            foreach (var p in platforms) if (feet.IntersectsWith(p)) return true;
+            foreach (var p in Solid) if (feet.IntersectsWith(p)) return true;
             // nếu hitbox chân đó chạm bất kì platform nào thì trả về true
             return false;
         }
@@ -655,7 +716,7 @@ namespace LapTrinhTrucQuangProjectTest
         {
             Rectangle c = GetCollRect(player, facingRight);
             int headCenter = c.X + c.Width / 2;
-            foreach (var p in platforms)
+            foreach (var p in Solid)
             {
                 if (headCenter <= p.Left + sideGrace || headCenter >= p.Right - sideGrace) continue;
                 int gap = p.Bottom - c.Top;
@@ -683,6 +744,7 @@ namespace LapTrinhTrucQuangProjectTest
         private void LoadMapFromContainer(Control container)
         {
             platforms.Clear(); // Xóa dữ liệu cũ
+            tiles.Clear();
 
             // Thay 'this.Controls' bằng 'container.Controls'
             foreach (Control c in container.Controls)
@@ -694,7 +756,11 @@ namespace LapTrinhTrucQuangProjectTest
                     platforms.Add(new Rectangle(c.Left, c.Top, c.Width, c.Height));
                     c.Visible = false;
                 }
-
+                if (tag != null && tag.StartsWith("tile_"))
+                {
+                    tiles.Add(new Tile(c.Left,c.Top,c.Width,c.Height, tag));
+                    c.Visible = false;
+                }
                 if (tag == "door")
                 {
                     door = new Rectangle(c.Left, c.Top, c.Width, c.Height);
@@ -771,6 +837,7 @@ namespace LapTrinhTrucQuangProjectTest
             e.Graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half; // giúp căn chỉnh pixel chính xác hơn, tránh lỗi lệch nửa pixel gây ra hình ảnh bị rung
 
             //e.Graphics.FillRectangle(Brushes.SaddleBrown, 0, 440, baseWidth, 60);
+            
             foreach (var p in platforms)
             {
                 if (platformImg != null)
@@ -786,8 +853,23 @@ namespace LapTrinhTrucQuangProjectTest
                 //{
                 //    e.Graphics.DrawRectangle(debugPen, p);
                 //}
+            }            
+
+            foreach (var t in tiles)
+            {
+                // Tìm ảnh trong kho dựa theo Tag (t.Type)
+                if (tileAssets.ContainsKey(t.Type) && tileAssets[t.Type] != null)
+                {
+                    Bitmap img = tileAssets[t.Type];
+                    // Vẽ ảnh co giãn theo kích thước Panel thiết kế
+                    e.Graphics.DrawImage(img, t.Rect);
+                }
+                else
+                {
+                    // Nếu quên nạp ảnh hoặc sai tag -> Vẽ màu xám báo lỗi
+                    e.Graphics.FillRectangle(Brushes.Gray, t.Rect);
+                }
             }
-            ;
 
             // nếu đứng yên -> vẽ frame tĩnh; còn lại -> vẽ anim hiện tại
             bool moving = (goLeft || goRight);
@@ -861,28 +943,37 @@ namespace LapTrinhTrucQuangProjectTest
                     e.Graphics.FillRectangle(brush, 0, 0, baseWidth, baseHeight);
                 }
 
-                // 2. Chữ "GAME OVER"
-                string text1 = "YOU DIED";
-                string text2 = "Nhấn ENTER để chơi lại";
+                // 2. VẼ ẢNH GAME OVER 
+                if (gameOverImg != null)
+                {
+                    // Tính toán để ảnh nằm chính giữa màn hình
+                    int imgW = gameOverImg.Width;
+                    int imgH = gameOverImg.Height;
 
-                using (Font font1 = new Font("Arial", 30, FontStyle.Bold))
+                    // Nếu ảnh to quá thì thu nhỏ lại (Optional)
+                    // Ví dụ: Nếu ảnh rộng hơn màn hình thì scale về 400px
+                    if (imgW > 400) { imgW = 400; imgH = (400 * gameOverImg.Height) / gameOverImg.Width; }
+
+                    int x = (baseWidth - imgW) / 2;
+                    int y = (baseHeight - imgH) / 2 - 50; // Dịch lên trên một chút cho cân đối
+
+                    e.Graphics.DrawImage(gameOverImg, x, y, imgW, imgH);
+                }
+                else
+                {
+                    // Dự phòng: Nếu ảnh lỗi thì vẽ chữ tạm
+                    e.Graphics.DrawString("GAME OVER", this.Font, Brushes.Red, 100, 100);
+                }
+
+                // 3. Vẽ dòng hướng dẫn "Press Enter"
+                string text2 = "Nhấn ENTER để chơi lại";
                 using (Font font2 = new Font("Arial", 16, FontStyle.Regular))
                 {
-                    // 3. Tính toán vị trí CHÍNH GIỮA (Center Alignment)
-                    // Đo kích thước chữ khi vẽ ra
-                    SizeF size1 = e.Graphics.MeasureString(text1, font1);
                     SizeF size2 = e.Graphics.MeasureString(text2, font2);
-
-                    // Công thức căn giữa: (Chiều rộng Form - Chiều rộng Chữ) / 2
-                    float x1 = (baseWidth - size1.Width) / 2;
-                    float y1 = (baseHeight - size1.Height) / 2 - 30; // Dịch lên một chút
-
                     float x2 = (baseWidth - size2.Width) / 2;
-                    float y2 = y1 + size1.Height + 10; // Nằm dưới chữ Game Over
+                    float y2 = (baseHeight / 2) + 70; // Nằm phía dưới ảnh một chút
 
-                    // 4. Vẽ chữ
-                    e.Graphics.DrawString(text1, font1, Brushes.Red, x1, y1);
-                    e.Graphics.DrawString(text2, font2, Brushes.White, x2, y2);
+                    e.Graphics.DrawString(text2, font2, Brushes.Red, x2, y2);
                 }
             }
         }
