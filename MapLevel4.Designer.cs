@@ -75,7 +75,7 @@
             // panel5
             // 
             this.panel5.BackColor = System.Drawing.Color.Yellow;
-            this.panel5.Location = new System.Drawing.Point(350, 3);
+            this.panel5.Location = new System.Drawing.Point(350, 12);
             this.panel5.Name = "panel5";
             this.panel5.Size = new System.Drawing.Size(52, 83);
             this.panel5.TabIndex = 2;
