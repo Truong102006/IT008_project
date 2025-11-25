@@ -106,12 +106,14 @@ namespace LapTrinhTrucQuangProjectTest
         private readonly string RunPath = @"Images\Punk_run.png";
         private readonly string JumpPath = @"Images\Punk_jump.png";
         private readonly string IdlePath = @"Images\Punk_idle.png";
+        private readonly string DoorPath = @"Images\flag.png";
+
 
         // Anim: tạo 3 đối tượng class SpriteAnim để quản lý hoạt ảnh nhân vật cho 3 hành động khác nhau
-        SpriteAnim runAnim = new SpriteAnim { FPS = 9, Loop = true }; // chạy chậm lại
+        SpriteAnim runAnim = new SpriteAnim { FPS = 10, Loop = true }; // chạy chậm lại
         SpriteAnim jumpAnim = new SpriteAnim { FPS = 10, Loop = true };
         SpriteAnim idleAnim = new SpriteAnim { FPS = 6, Loop = true };
-
+        SpriteAnim doorAnim = new SpriteAnim { FPS = 10, Loop = true };
 
         AnimState currentState = AnimState.Idle;
         SpriteAnim currentAnim;
@@ -137,6 +139,7 @@ namespace LapTrinhTrucQuangProjectTest
             LoadAnimationEven(RunPath, runAnim, 6, alphaThreshold: 16, tightenEdges: false);
             LoadAnimationEven(JumpPath, jumpAnim, 4, alphaThreshold: 16, tightenEdges: false);
             LoadAnimationEven(IdlePath, idleAnim, 4, alphaThreshold: 16, tightenEdges: false);
+            LoadAnimationEven(DoorPath, doorAnim, 7, alphaThreshold: 0, tightenEdges: false);
 
             currentAnim = idleAnim; currentAnim.Reset();
             // Khởi động nhân vật, đặt trạng thái của nhân vật về Idle và tua về khung hình đầu tiên
@@ -575,6 +578,8 @@ namespace LapTrinhTrucQuangProjectTest
 
             currentAnim?.Update(dt);
             // gọi hàm tính toán thời gian cho bột animation hiện tại để chuyển khung hình
+            doorAnim.Update(dt);
+            // gọi hàm tương tự cho animation cửa qua màn
 
             // DEBUG: nhìn state/moving trực tiếp ở title
             //this.Text = $"State={currentState}  movingNow={(player.X != prevX)}  goL={goLeft} goR={goRight}  onGround={onGround}";
@@ -793,7 +798,18 @@ namespace LapTrinhTrucQuangProjectTest
             else
                 e.Graphics.FillRectangle(Brushes.Red, player); // nếu file nhân vật bị lỗi sẽ vẽ hình chữ nhật đỏ thay thế
 
-            e.Graphics.FillRectangle(Brushes.Gold, door); // vẽ cửa màu vàng
+            // Vẽ cửa:
+            if (doorAnim.Sheet != null)
+            {
+                // Vẽ animation cờ vào vị trí ô chữ nhật 'door'
+                // facingRight = true (Cờ luôn bay về một hướng, không cần lật)
+                doorAnim.Draw(e.Graphics, door, true);
+            }
+            else
+            {
+                // Nếu ảnh lỗi thì vẫn vẽ màu vàng
+                e.Graphics.FillRectangle(Brushes.Gold, door);
+            }
 
             // DEBUG: xem hitbox va chạm
             //var dbg = GetCollRect(player, facingRight);
