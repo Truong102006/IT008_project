@@ -15,7 +15,7 @@ namespace LapTrinhTrucQuangProjectTest
         Bitmap backgroundImg; // biến chứa ảnh nền (GIF hoặc PNG đều được)
         Bitmap gameOverImg;
         bool goLeft, goRight, jumping, onGround, levelTransitioning;
-        int jumpSpeed = 0, force = 24, gravity = 8, playerSpeed = 3, currentLevel = 1;
+        int jumpSpeed = 0, force = 20, gravity = 8, playerSpeed = 3, currentLevel = 1;
         int maxHealth = 100;     // Máu tối đa
         int currentHealth = 100; // Máu hiện tại
         bool isGameOver = false;
@@ -36,7 +36,7 @@ namespace LapTrinhTrucQuangProjectTest
 
         // Tinh chỉnh hitbox (px): co bớt trên/dưới + trước/sau (mặt trước co nhiều hơn)
         const int HB_TOP = 11, HB_BOTTOM = 1;
-        const int HB_BACK = 2, HB_FRONT = 17;      
+        const int HB_BACK = 10, HB_FRONT = 10;      
 
         // ===== ANIM ===== (chỉ Run & Jump)
         enum AnimState { Idle, Run, Jump }        
@@ -130,11 +130,22 @@ namespace LapTrinhTrucQuangProjectTest
                 string path = @"Images\" + fileName;
                 if (File.Exists(path))
                 {
+                    // 1.nạp ảnh lên ram
+                    Bitmap img = (Bitmap)Image.FromFile(path);
+                    // 2. kích hoạt animation:
+                    if (ImageAnimator.CanAnimate(img)) // kiểm tra xem img có chuyển động được không
+                    {
+                        // Nếu có, bắt đầu bộ đếm thời gian cho nó.
+                        // Hàm callback (s, e) => {} để trống vì ta không cần xử lý sự kiện từng khung hình,
+                        // ta chỉ cần nó bắt đầu chạy ngầm là được.
+                        ImageAnimator.Animate(img, (s, e) => { });
+                    }
+
                     // Nếu dictionary đã chứa tag thì cập nhật, chưa có thì thêm mới
                     if (tileAssets.ContainsKey(tag))
-                        tileAssets[tag] = (Bitmap)Image.FromFile(path);
+                        tileAssets[tag] = img;
                     else
-                        tileAssets.Add(tag, (Bitmap)Image.FromFile(path));
+                        tileAssets.Add(tag,img);
                 }
             }
             catch { }
@@ -203,6 +214,36 @@ namespace LapTrinhTrucQuangProjectTest
             AddTileImage("tile_4", "tile_4.png");
             AddTileImage("tile_5", "tile_5.png");
             AddTileImage("tile_6", "tile_6.png");
+            AddTileImage("tile_7", "tile_7.png");
+            AddTileImage("tile_8", "tile_8.png");
+            AddTileImage("tile_9", "tile_9.png");
+            AddTileImage("tile_10", "tile_10.png");
+            AddTileImage("tile_11", "tile_11.png");
+            AddTileImage("tile_12", "tile_12.png");
+            AddTileImage("tile_13", "tile_13.png");
+            AddTileImage("tile_14", "tile_14.png");
+            AddTileImage("tile_15", "tile_15.png");
+            AddTileImage("tile_16", "tile_16.png");
+            AddTileImage("tile_17", "tile_17.png");
+            AddTileImage("tile_18", "tile_18.png");
+            AddTileImage("tile_19", "tile_19.png");
+            AddTileImage("tile_20", "tile_20.png");
+            AddTileImage("tile_21", "tile_21.png");
+            AddTileImage("tile_22", "tile_22.png");
+            AddTileImage("tile_23", "tile_23.png");
+            AddTileImage("tile_24", "tile_24.png");
+            AddTileImage("tile_25", "tile_25.png");
+            AddTileImage("tile_26", "tile_26.png");
+            AddTileImage("tile_27", "tile_27.png");
+            AddTileImage("tile_28", "tile_28.png");
+            AddTileImage("tile_29", "tile_29.png");
+            AddTileImage("tile_30", "tile_30.png");
+            AddTileImage("tile_31", "tile_31.png");
+            AddTileImage("tile_32", "tile_32.png");
+            AddTileImage("tile_33", "tile_33.png");
+            AddTileImage("trap_1", "trap_1.png");
+            AddTileImage("water_2", "water4-resized.gif");
+            AddTileImage("water_3", "water4-rotated.gif");
             // nạp hình các tiles vào với các tag tương ứng cho panel
             try
             {
@@ -656,11 +697,6 @@ namespace LapTrinhTrucQuangProjectTest
             currentAnim?.Reset(); // reset khung hình sau khi chuyển trạng thái
         }
 
-        private void panel11_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
 
         // ===== INPUT =====
         private void KeyIsDown(object sender, KeyEventArgs e)
@@ -756,7 +792,7 @@ namespace LapTrinhTrucQuangProjectTest
                     platforms.Add(new Rectangle(c.Left, c.Top, c.Width, c.Height));
                     c.Visible = false;
                 }
-                if (tag != null && tag.StartsWith("tile_"))
+                if (tag != null && (tag.StartsWith("tile_") || tag.StartsWith("trap_") || tag.StartsWith("water_")))
                 {
                     tiles.Add(new Tile(c.Left,c.Top,c.Width,c.Height, tag));
                     c.Visible = false;
@@ -791,6 +827,7 @@ namespace LapTrinhTrucQuangProjectTest
 
             // Hút dữ liệu từ tờ bản đồ đó vào game
             LoadMapFromContainer(map);
+
 
             // Hút xong thì xóa tờ bản đồ đó đi cho nhẹ máy
             map.Dispose();
@@ -861,8 +898,10 @@ namespace LapTrinhTrucQuangProjectTest
                 if (tileAssets.ContainsKey(t.Type) && tileAssets[t.Type] != null)
                 {
                     Bitmap img = tileAssets[t.Type];
-                    // Vẽ ảnh co giãn theo kích thước Panel thiết kế
+                    ImageAnimator.UpdateFrames(img);
+                    // Dòng này dùng để cập nhật frame cho file gif img dựa trên thời gian hiện tại của game, chọn frame đúng cho file này.
                     e.Graphics.DrawImage(img, t.Rect);
+                    // Vẽ ảnh co giãn theo kích thước Panel thiết kế
                 }
                 else
                 {
