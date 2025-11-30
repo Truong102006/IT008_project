@@ -19,6 +19,7 @@ namespace LapTrinhTrucQuangProjectTest
         int maxHealth = 100;     // Máu tối đa
         int currentHealth = 100; // Máu hiện tại
         bool isGameOver = false;
+        bool isSubmerged = false;
         int startX;
         int startY;
         Rectangle player, door;
@@ -58,8 +59,16 @@ namespace LapTrinhTrucQuangProjectTest
         {
             get
             {
-                foreach (var p in platforms) yield return p;   // Lấy nền cũ
-                foreach (var t in tiles) yield return t.Rect; // Lấy nền mới
+                foreach (var p in platforms) yield return p;
+
+                foreach (var t in tiles)
+                {
+                    // Chỉ tính là vật thể rắn nếu tag không bắt đầu bằng "water_","deco_","trap_"
+                    if (!t.Type.StartsWith("water_") && !t.Type.StartsWith("deco_") && !t.Type.StartsWith("trap_"))
+                    {
+                        yield return t.Rect;
+                    }
+                }
             }
         }
         class SpriteAnim
@@ -241,6 +250,18 @@ namespace LapTrinhTrucQuangProjectTest
             AddTileImage("tile_31", "tile_31.png");
             AddTileImage("tile_32", "tile_32.png");
             AddTileImage("tile_33", "tile_33.png");
+            AddTileImage("deco_bui1", "deco_bui1.png");
+            AddTileImage("deco_bui2", "deco_bui2.png");
+            AddTileImage("deco_bui3", "deco_bui3.png");
+            AddTileImage("deco_bui4", "deco_bui4.png");
+            AddTileImage("deco_bui5.1", "deco_bui5.1.png");
+            AddTileImage("deco_bui5.2", "deco_bui5.2.png");
+            AddTileImage("deco_bui5.3", "deco_bui5.3.png");
+            AddTileImage("deco_cay1", "deco_cay1.png");
+            AddTileImage("deco_cay2", "deco_cay2.png");
+            AddTileImage("deco_cay3", "deco_cay3.png");
+            AddTileImage("deco_da1", "deco_da1.png");
+            AddTileImage("deco_da2", "deco_da2.png");
             AddTileImage("trap_1", "trap_1.png");
             AddTileImage("water_2", "water4-resized.gif");
             AddTileImage("water_3", "water4-rotated.gif");
@@ -441,6 +462,54 @@ namespace LapTrinhTrucQuangProjectTest
 
             int prevX = player.X;
             int prevY = player.Y;
+
+            // Xử lí tương tác với trap và water:
+            Rectangle playerHitbox = GetCollRect(player, facingRight);
+            bool hitTrap = false; // Frame này đã dính bẫy chưa?
+            isSubmerged = false;  // Reset trạng thái nước mỗi khung hình
+
+            foreach (var t in tiles)
+            {
+                if (t.Type.StartsWith("water_"))
+                {
+                    // Nếu hitbox nhân vật chạm vào nước
+                    if (playerHitbox.IntersectsWith(t.Rect))
+                    {
+                        isSubmerged = true; // Bật trạng thái: Đang ở trong nước
+                    }
+                }
+                if (t.Type.StartsWith("trap_"))
+                {
+                    // Kiểm tra va chạm giữa Nhân vật và Bẫy
+                    if (playerHitbox.IntersectsWith(t.Rect))
+                    {
+                        // Logic chạm bẫy:
+                        // Chỉ bị thương khi chạm từ trên xuống (đạp vào gai) hoặc chạm trực tiếp
+
+                        // 1.Trừ máu
+                        if (!hitTrap)
+                        {
+                            currentHealth -= 25;
+                            hitTrap = true; // Đánh dấu đã dính, các bẫy sau sẽ không trừ máu nữa
+                        }
+                        // 2. Hất tung nhân vật lên
+                        jumping = true;      // Kích hoạt trạng thái nhảy
+                        onGround = false;    // Rời khỏi mặt đất
+                        jumpSpeed = 25;      // Lực nảy lên (nhỏ hơn lực nhảy thường một chút)    
+
+                        // 3. Kiểm tra Chết
+                        if (currentHealth <= 0)
+                        {
+                            currentHealth = 0;
+                            isGameOver = true;
+                            gameTimer.Stop();
+                            Invalidate();
+                            return;
+                        }                        
+                    }
+                }
+            }
+
             // lưu vị trí trước khi nhân vật di chuyển để gặp vấn đề thì quay lại chỗ cũ
             bool prevFace = facingRight;
             // lưu hướng quay mặt cũ lại
@@ -477,12 +546,27 @@ namespace LapTrinhTrucQuangProjectTest
                 // *QUAN TRỌNG: nếu không có thì nhân vật sẽ kẹt vĩnh viễn trong tường
             }
 
+            // đoạn code if này để cho nhân vật đang nhảy và rơi xuống nếu chạm nước thì tắt chế độ nhảy ngay lập tức và chuyển sang trạng thái ngập nước, vì nếu đang nhảy và rớt xuống mà gặp nước không ngừng trạng thái nhảy thì trọng lực sẽ không bị thay đổi mà nhân vật bị quán tính kéo thẳng xuống vực
+            // dễ hiểu thì đoạn code này mô phỏng khi nhảy xuống nước thì lực kéo xuống khi nhảy bị triệt tiêu dần dần
+            if (isSubmerged)
+            {
+                // Nếu đang ở dưới nước và đang bị kéo rơi xuống (do hết lực nhảy)
+                if (jumping && jumpSpeed < 0)
+                {
+                    jumping = false; // Tắt chế độ nhảy ngay lập tức
+                    jumpSpeed = 0;   // Xóa bỏ quán tính rơi nhanh
+                }
+            }
 
             // Nhảy + trọng lực: đoạn code dưới này dùng để giải quyết chạm trần, khi nhân vật nhảy lên mà chạm trần thì cho rớt xuống ngay chứ không nhảy xuyên qua
             if (jumping) { player.Y -= jumpSpeed; jumpSpeed -= 1; }
             // nhân vật nhảy lên, jumpSpeed giảm dần mô phỏng trọng lực
-            if (!onGround) player.Y += gravity;
-            // nếu đang lơ lửng thì dùng gravity kéo nhân vật xuống
+            if (!onGround)
+            {
+                // Nếu đang chìm -> Rơi cực chậm (2). Nếu không -> Rơi thường (8)
+                int currentGravity = isSubmerged ? 2 : gravity;
+                player.Y += currentGravity;
+            }
             Rectangle coll = GetCollRect(player, facingRight);
             // tính toán một hitbox mới cho nhân vật sau khi Y được cập nhật
             // hitbox đó được dùng để xét va chạm trong đoạn dưới đây
@@ -557,8 +641,15 @@ namespace LapTrinhTrucQuangProjectTest
             // Thêm platform cũ vào trước (giữ nguyên thứ tự để groundedIndex không bị loạn):
             foreach (var p in platforms) Objects.Add(p);
 
-            // Thêm tiles mới vào sau (lấy .Rect của từng tile):
-            foreach (var t in tiles) Objects.Add(t.Rect);
+            // Thêm tiles mới vào sau (CÓ CHỌN LỌC):
+            foreach (var t in tiles)
+            {
+                // Chỉ tính là tile nếu không phải là nước, bẫy, hoặc đồ trang trí
+                if (!t.Type.StartsWith("water_") && !t.Type.StartsWith("trap_") && !t.Type.StartsWith("deco_"))
+                {
+                    Objects.Add(t.Rect);
+                }
+            }
 
             // Hàm tiếp đất dành cho platforms và tiles:
             for (int i = 0; i < Objects.Count; i++)
@@ -624,7 +715,7 @@ namespace LapTrinhTrucQuangProjectTest
             if (player.Y > baseHeight) // rớt xuống vực
             {
                 // 1. Trừ máu
-                currentHealth -= 100; // Trừ thẳng 100 máu (như ý bạn muốn sau này làm Boss)
+                currentHealth -= 100; // Trừ thẳng 100 máu 
 
                 // 2. Hồi sinh về vị trí cũ
                 player.X = startX;
@@ -681,6 +772,7 @@ namespace LapTrinhTrucQuangProjectTest
             // DEBUG: nhìn state/moving trực tiếp ở title
             //this.Text = $"State={currentState}  movingNow={(player.X != prevX)}  goL={goLeft} goR={goRight}  onGround={onGround}";
 
+            
             Invalidate();
             // gửi yêu cầu vẽ lại toàn bộ Form, kích hoạt hàm OnPaint() để hiển thị mọi thay đổi về vị trí, hình ảnh và trạng thái 
         }
@@ -792,7 +884,7 @@ namespace LapTrinhTrucQuangProjectTest
                     platforms.Add(new Rectangle(c.Left, c.Top, c.Width, c.Height));
                     c.Visible = false;
                 }
-                if (tag != null && (tag.StartsWith("tile_") || tag.StartsWith("trap_") || tag.StartsWith("water_")))
+                if (tag != null && (tag.StartsWith("tile_") || tag.StartsWith("trap_") || tag.StartsWith("water_") || tag.StartsWith("deco_")))
                 {
                     tiles.Add(new Tile(c.Left,c.Top,c.Width,c.Height, tag));
                     c.Visible = false;
