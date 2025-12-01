@@ -158,6 +158,9 @@
     <Content Include="Images\deco_da2.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Images\enemy.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Images\flag.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

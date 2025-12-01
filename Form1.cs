@@ -28,6 +28,7 @@ namespace LapTrinhTrucQuangProjectTest
         List<Rectangle> platforms = new List<Rectangle>();
         List<Rectangle> coin = new List<Rectangle>();
         List<Tile> tiles = new List<Tile>();
+        List<Enemy> enemies = new List<Enemy>();
         Dictionary<string, Bitmap> tileAssets = new Dictionary<string, Bitmap>(); // Khai báo Kho chứa (Dictionary) chứa các ô tilesets, Key (string) là Tag của ô, Value (Bitmap) là hình ảnh của ô        
         Timer gameTimer = new Timer();
 
@@ -55,6 +56,18 @@ namespace LapTrinhTrucQuangProjectTest
             {
                 Rect = new Rectangle(x, y, w, h);
                 Type = type;
+            }
+        }
+        class Enemy
+        {
+            public Rectangle Rect;
+            public int Speed = 1;
+            public bool FacingRight = false; // Mặc định đi sang trái
+            public bool IsDead = false;      // Trạng thái sống/chết
+
+            public Enemy(int x, int y, int w, int h)
+            {
+                Rect = new Rectangle(x, y, w, h);
             }
         }
         // Thuộc tính ảo: Tự động nối 2 danh sách lại mỗi khi được gọi, dùng thuộc tính AllSolids này để gộp các thuộc tính của tiles và platforms lại với nhau để xử lí va chạm vì chúng có chung tính chất đều là vật thể rắn trong game
@@ -169,6 +182,7 @@ namespace LapTrinhTrucQuangProjectTest
         private readonly string IdlePath = @"Images\Punk_idle.png";
         private readonly string DoorPath = @"Images\flag.png";
         private readonly string CoinPath = @"Images\coin_1.png";
+        private readonly string EnemyPath = @"Images\enemy.png"; 
 
         // Anim: tạo 3 đối tượng class SpriteAnim để quản lý hoạt ảnh nhân vật cho 3 hành động khác nhau
         SpriteAnim runAnim = new SpriteAnim { FPS = 10, Loop = true }; // chạy chậm lại
@@ -176,6 +190,7 @@ namespace LapTrinhTrucQuangProjectTest
         SpriteAnim idleAnim = new SpriteAnim { FPS = 6, Loop = true };
         SpriteAnim doorAnim = new SpriteAnim { FPS = 10, Loop = true };
         SpriteAnim coinAnim = new SpriteAnim { FPS = 9, Loop = true };
+        SpriteAnim enemyAnim = new SpriteAnim { FPS = 8, Loop = true }; // Animation cho quái
 
         AnimState currentState = AnimState.Idle;
         SpriteAnim currentAnim;
@@ -203,6 +218,7 @@ namespace LapTrinhTrucQuangProjectTest
             LoadAnimationEven(IdlePath, idleAnim, 4, alphaThreshold: 16, tightenEdges: false);
             LoadAnimationEven(DoorPath, doorAnim, 7, alphaThreshold: 0, tightenEdges: true);
             LoadAnimationEven(CoinPath, coinAnim, 7, alphaThreshold: 0, tightenEdges: true);
+            LoadAnimationEven(EnemyPath, enemyAnim, 6, alphaThreshold: 16, tightenEdges: true);
 
             currentAnim = idleAnim; currentAnim.Reset();
             // Khởi động nhân vật, đặt trạng thái của nhân vật về Idle và tua về khung hình đầu tiên
@@ -467,12 +483,86 @@ namespace LapTrinhTrucQuangProjectTest
 
             int prevX = player.X;
             int prevY = player.Y;
-
-            // Xử lí tương tác với trap và water:
+            bool prevFace = facingRight;// lưu hướng quay mặt cũ lại
+            Rectangle prevColl = GetCollRect(new Rectangle(prevX, prevY, player.Width, player.Height), prevFace);
+            // prevColl có tác dụng lưu lại vị trí cũ trước khi di chuyển của nhân vật để phòng các trường hợp nhân vật di chuyển bị bug
             Rectangle playerHitbox = GetCollRect(player, facingRight);
+            for (int i = enemies.Count - 1; i >= 0; i--)
+            {
+                Enemy en = enemies[i];
+                if (en.IsDead) continue;
+
+                // A. Di chuyển
+                int moveStep = en.FacingRight ? en.Speed : -en.Speed;
+                en.Rect.X += moveStep;
+
+                // B. AI: Quay đầu khi gặp tường hoặc hết đường
+                // Tạo cảm biến: 1 cái check tường (ngang), 1 cái check đất (dưới chân)
+                int sensorX = en.FacingRight ? (en.Rect.Right + 2) : (en.Rect.Left - 2);
+                Rectangle wallSensor = new Rectangle(sensorX, en.Rect.Y, 2, en.Rect.Height - 5);
+                Rectangle groundSensor = new Rectangle(sensorX, en.Rect.Bottom, 2, 2);
+
+                bool hitWall = false;
+                bool hasGround = false;
+
+                foreach (var p in Solid)
+                {
+                    if (wallSensor.IntersectsWith(p)) hitWall = true;
+                    if (groundSensor.IntersectsWith(p)) hasGround = true;
+                }
+
+                if (hitWall || !hasGround)
+                {
+                    en.FacingRight = !en.FacingRight; // Đổi hướng
+                }
+
+                // C. Tương tác với Player
+                if (playerHitbox.IntersectsWith(en.Rect))
+                {
+                    // Kiểm tra: Người chơi có đang rơi xuống VÀ chân cũ nằm cao hơn đầu quái không?
+                    bool isFallingAttack = !onGround && jumpSpeed <= 0;
+                    bool isAbove = prevColl.Bottom <= en.Rect.Top + 10; // +10 là dung sai
+
+                    if (isFallingAttack && isAbove)
+                    {
+                        // ==> PLAYER THẮNG (Đạp chết quái)
+                        en.IsDead = true;
+                        enemies.RemoveAt(i);
+                        score += 5;
+
+                        // Nảy người chơi lên
+                        jumping = true;
+                        onGround = false;
+                        jumpSpeed = 15;
+                    }
+                    else
+                    {
+                        // ==> PLAYER THUA (Mất máu)
+                        if (currentHealth > 0)
+                        {
+                            currentHealth -= 20;
+
+                            // Hiệu ứng bị đẩy lùi (Knockback)
+                            if (player.X < en.Rect.X) player.X -= 30;
+                            else player.X += 30;
+
+                            if (currentHealth <= 0)
+                            {
+                                currentHealth = 0;
+                                isGameOver = true;
+                                gameTimer.Stop();
+                                Invalidate();
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+            // Xử lí tương tác với trap và water:
             bool hitTrap = false; // Frame này đã dính bẫy chưa?
             isSubmerged = false;  // Reset trạng thái nước mỗi khung hình
             isCollected = false; // Reset trạng thái nhặt coin mỗi khung hình
+
             foreach (var t in tiles)
             {
                 if (t.Type.StartsWith("water_"))
@@ -515,13 +605,6 @@ namespace LapTrinhTrucQuangProjectTest
                     }
                 }
             }
-
-            // lưu vị trí trước khi nhân vật di chuyển để gặp vấn đề thì quay lại chỗ cũ
-            bool prevFace = facingRight;
-            // lưu hướng quay mặt cũ lại
-            Rectangle prevColl = GetCollRect(new Rectangle(prevX, prevY, player.Width, player.Height), prevFace);
-            // prevColl có tác dụng lưu lại vị trí cũ trước khi di chuyển của nhân vật để phòng các trường hợp nhân vật di chuyển bị bug
-
             // Điều khiển trái/phải + hướng vẽ
             if (goLeft) { player.X -= playerSpeed; facingRight = false; }
             if (goRight) { player.X += playerSpeed; facingRight = true; }
@@ -786,11 +869,11 @@ namespace LapTrinhTrucQuangProjectTest
             doorAnim.Update(dt);
             coinAnim.Update(dt);
             // gọi hàm tương tự cho animation cửa qua màn và coin trong game
-
+            enemyAnim.Update(dt);
             // DEBUG: nhìn state/moving trực tiếp ở title
             //this.Text = $"State={currentState}  movingNow={(player.X != prevX)}  goL={goLeft} goR={goRight}  onGround={onGround}";
 
-            
+
             Invalidate();
             // gửi yêu cầu vẽ lại toàn bộ Form, kích hoạt hàm OnPaint() để hiển thị mọi thay đổi về vị trí, hình ảnh và trạng thái 
         }
@@ -891,6 +974,7 @@ namespace LapTrinhTrucQuangProjectTest
         {
             platforms.Clear(); // Xóa dữ liệu cũ
             tiles.Clear();
+            enemies.Clear();
 
             // Thay 'this.Controls' bằng 'container.Controls'
             foreach (Control c in container.Controls)
@@ -921,6 +1005,12 @@ namespace LapTrinhTrucQuangProjectTest
                 {
                     player.X = c.Left;
                     player.Y = c.Top;
+                    c.Visible = false;
+                }
+                if (tag == "enemy")
+                {
+                    // Tạo quái tại vị trí Panel, kích thước chuẩn 40x40 (hoặc lấy c.Width, c.Height tùy bạn)
+                    enemies.Add(new Enemy(c.Left, c.Top, 40, 40));
                     c.Visible = false;
                 }
             }
@@ -1060,6 +1150,19 @@ namespace LapTrinhTrucQuangProjectTest
                 }
             }
 
+            foreach (var en in enemies)
+            {
+                if (!en.IsDead && enemyAnim.Sheet != null)
+                {
+                    // Dùng lại hàm Draw của bạn, truyền FacingRight của quái vào để nó tự lật hình
+                    enemyAnim.Draw(e.Graphics, en.Rect, en.FacingRight);
+                }
+                else if (!en.IsDead)
+                {
+                    // Vẽ hộp màu tím nếu chưa có ảnh
+                    e.Graphics.FillRectangle(Brushes.Purple, en.Rect);
+                }
+            }
             // DEBUG: xem hitbox va chạm
             //var dbg = GetCollRect(player, facingRight);
             //using (var pen = new Pen(Color.Lime, 1f / Math.Max(0.001f, scaleX)))
