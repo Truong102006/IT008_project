@@ -16,14 +16,17 @@ namespace LapTrinhTrucQuangProjectTest
         Bitmap gameOverImg;
         bool goLeft, goRight, jumping, onGround, levelTransitioning;
         int jumpSpeed = 0, force = 20, gravity = 8, playerSpeed = 3, currentLevel = 1;
+        int score = 0;
         int maxHealth = 100;     // Máu tối đa
         int currentHealth = 100; // Máu hiện tại
         bool isGameOver = false;
         bool isSubmerged = false;
+        bool isCollected = false;
         int startX;
         int startY;
         Rectangle player, door;
         List<Rectangle> platforms = new List<Rectangle>();
+        List<Rectangle> coin = new List<Rectangle>();
         List<Tile> tiles = new List<Tile>();
         Dictionary<string, Bitmap> tileAssets = new Dictionary<string, Bitmap>(); // Khai báo Kho chứa (Dictionary) chứa các ô tilesets, Key (string) là Tag của ô, Value (Bitmap) là hình ảnh của ô        
         Timer gameTimer = new Timer();
@@ -165,13 +168,14 @@ namespace LapTrinhTrucQuangProjectTest
         private readonly string JumpPath = @"Images\Punk_jump.png";
         private readonly string IdlePath = @"Images\Punk_idle.png";
         private readonly string DoorPath = @"Images\flag.png";
-
+        private readonly string CoinPath = @"Images\coin_1.png";
 
         // Anim: tạo 3 đối tượng class SpriteAnim để quản lý hoạt ảnh nhân vật cho 3 hành động khác nhau
         SpriteAnim runAnim = new SpriteAnim { FPS = 10, Loop = true }; // chạy chậm lại
         SpriteAnim jumpAnim = new SpriteAnim { FPS = 10, Loop = true };
         SpriteAnim idleAnim = new SpriteAnim { FPS = 6, Loop = true };
         SpriteAnim doorAnim = new SpriteAnim { FPS = 10, Loop = true };
+        SpriteAnim coinAnim = new SpriteAnim { FPS = 9, Loop = true };
 
         AnimState currentState = AnimState.Idle;
         SpriteAnim currentAnim;
@@ -197,7 +201,8 @@ namespace LapTrinhTrucQuangProjectTest
             LoadAnimationEven(RunPath, runAnim, 6, alphaThreshold: 16, tightenEdges: false);
             LoadAnimationEven(JumpPath, jumpAnim, 4, alphaThreshold: 16, tightenEdges: false);
             LoadAnimationEven(IdlePath, idleAnim, 4, alphaThreshold: 16, tightenEdges: false);
-            LoadAnimationEven(DoorPath, doorAnim, 7, alphaThreshold: 0, tightenEdges: false);
+            LoadAnimationEven(DoorPath, doorAnim, 7, alphaThreshold: 0, tightenEdges: true);
+            LoadAnimationEven(CoinPath, coinAnim, 7, alphaThreshold: 0, tightenEdges: true);
 
             currentAnim = idleAnim; currentAnim.Reset();
             // Khởi động nhân vật, đặt trạng thái của nhân vật về Idle và tua về khung hình đầu tiên
@@ -249,7 +254,7 @@ namespace LapTrinhTrucQuangProjectTest
             AddTileImage("tile_30", "tile_30.png");
             AddTileImage("tile_31", "tile_31.png");
             AddTileImage("tile_32", "tile_32.png");
-            AddTileImage("tile_33", "tile_33.png");
+            AddTileImage("tile_33", "tile_33.png");           
             AddTileImage("deco_bui1", "deco_bui1.png");
             AddTileImage("deco_bui2", "deco_bui2.png");
             AddTileImage("deco_bui3", "deco_bui3.png");
@@ -467,7 +472,7 @@ namespace LapTrinhTrucQuangProjectTest
             Rectangle playerHitbox = GetCollRect(player, facingRight);
             bool hitTrap = false; // Frame này đã dính bẫy chưa?
             isSubmerged = false;  // Reset trạng thái nước mỗi khung hình
-
+            isCollected = false; // Reset trạng thái nhặt coin mỗi khung hình
             foreach (var t in tiles)
             {
                 if (t.Type.StartsWith("water_"))
@@ -501,6 +506,7 @@ namespace LapTrinhTrucQuangProjectTest
                         if (currentHealth <= 0)
                         {
                             currentHealth = 0;
+                            score = 0;
                             isGameOver = true;
                             gameTimer.Stop();
                             Invalidate();
@@ -731,6 +737,7 @@ namespace LapTrinhTrucQuangProjectTest
                 if (currentHealth <= 0)
                 {
                     currentHealth = 0; // Chốt máu về 0
+                    score = 0; // reset điểm
                     isGameOver = true; // Bật chế độ Game Over
                     gameTimer.Stop();  // Dừng game lại
                     Invalidate();      // Vẽ lại màn hình lần cuối để hiện chữ Game Over
@@ -739,7 +746,7 @@ namespace LapTrinhTrucQuangProjectTest
             }
 
 
-            // Cửa
+            // Cửa:
             if (coll.IntersectsWith(door) && !levelTransitioning)
             {
                 levelTransitioning = true;
@@ -751,6 +758,16 @@ namespace LapTrinhTrucQuangProjectTest
             }
             // levelTransitioning là một flag để NextLevel() được gọi một lần duy nhất chứ không gọi 60 lần/s khi nhân vật đứng trong cửa
 
+            // Coin:
+            for (int i = coin.Count - 1; i >= 0; i--)
+            {
+                if (coll.IntersectsWith(coin[i]) && isCollected == false)
+                {
+                    isCollected = true;
+                    score += 1;
+                    coin.RemoveAt(i);
+                }
+            }
             // === Chọn state theo DI CHUYỂN THỰC TẾ ===
 
             bool inAir = jumping || !onGround;
@@ -767,7 +784,8 @@ namespace LapTrinhTrucQuangProjectTest
             currentAnim?.Update(dt);
             // gọi hàm tính toán thời gian cho bột animation hiện tại để chuyển khung hình
             doorAnim.Update(dt);
-            // gọi hàm tương tự cho animation cửa qua màn
+            coinAnim.Update(dt);
+            // gọi hàm tương tự cho animation cửa qua màn và coin trong game
 
             // DEBUG: nhìn state/moving trực tiếp ở title
             //this.Text = $"State={currentState}  movingNow={(player.X != prevX)}  goL={goLeft} goR={goRight}  onGround={onGround}";
@@ -894,7 +912,11 @@ namespace LapTrinhTrucQuangProjectTest
                     door = new Rectangle(c.Left, c.Top, c.Width, c.Height);
                     c.Visible = false;
                 }
-
+                if (tag != null && tag.StartsWith("coin_"))
+                {
+                    coin.Add(new Rectangle(c.Left, c.Top, c.Width, c.Height));
+                    c.Visible = false;
+                }
                 if (tag == "player")
                 {
                     player.X = c.Left;
@@ -1024,6 +1046,20 @@ namespace LapTrinhTrucQuangProjectTest
                 e.Graphics.FillRectangle(Brushes.Gold, door);
             }
 
+            // Vẽ coin
+            foreach (var c in coin)
+            {
+                if (coinAnim.Sheet != null)
+                {
+                    coinAnim.Draw(e.Graphics, c, true);
+                }
+                else
+                {
+                    // Nếu ảnh lỗi thì vẫn vẽ màu vàng
+                    e.Graphics.FillRectangle(Brushes.Gold, c);
+                }
+            }
+
             // DEBUG: xem hitbox va chạm
             //var dbg = GetCollRect(player, facingRight);
             //using (var pen = new Pen(Color.Lime, 1f / Math.Max(0.001f, scaleX)))
@@ -1038,10 +1074,13 @@ namespace LapTrinhTrucQuangProjectTest
 
             // --- MỚI: VẼ CHỮ "HP" ---
             // Tạo font chữ: Arial, cỡ 12, in đậm
-            using (Font hpFont = new Font("Arial", 12, FontStyle.Bold))
+            string hp = "HP";
+            using (Font hpFont = new Font("Arial", 14, FontStyle.Bold))            
             {
+                // Vẽ bóng đen cho chữ nổi bật
+                e.Graphics.DrawString(hp, hpFont, Brushes.Black, barX - 40 + 2, barY + 2);
                 // Vẽ chữ "HP" màu đỏ, nằm bên trái thanh máu (barX - 40)
-                e.Graphics.DrawString("HP", hpFont, Brushes.Red, barX - 40, barY);
+                e.Graphics.DrawString(hp, hpFont, Brushes.Red, barX - 40, barY);
             }
             // ------------------------
 
@@ -1062,6 +1101,20 @@ namespace LapTrinhTrucQuangProjectTest
             using (Pen borderPen = new Pen(Color.White, 2)) // Đổi viền màu trắng cho nổi trên nền đen
             {
                 e.Graphics.DrawRectangle(borderPen, barX, barY, barW, barH);
+            }
+
+            // VẼ ĐIỂM SỐ ( ngay dưới thanh máu )
+            string scoreText = "SCORE: " + score.ToString(); //"SCORE: 5"
+
+            using (Font scoreFont = new Font("Arial", 14, FontStyle.Bold))
+            {
+                float scoreX = barX - 43; // canh sao cho ngang hàng với chữ HP
+                float scoreY = barY + 30; // bên dưới thanh máu 30px
+
+                // Vẽ bóng đen cho chữ nổi bật
+                e.Graphics.DrawString(scoreText, scoreFont, Brushes.Black, scoreX + 2, scoreY + 2);
+                // Vẽ chữ màu vàng/trắng
+                e.Graphics.DrawString(scoreText, scoreFont, Brushes.Gold, scoreX, scoreY);
             }
 
             // ===== VẼ MÀN HÌNH GAME OVER =====

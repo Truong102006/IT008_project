@@ -34,6 +34,8 @@
             this.panel4 = new System.Windows.Forms.Panel();
             this.panel5 = new System.Windows.Forms.Panel();
             this.panel6 = new System.Windows.Forms.Panel();
+            this.panel8 = new System.Windows.Forms.Panel();
+            this.panel7 = new System.Windows.Forms.Panel();
             this.SuspendLayout();
             // 
             // panel1
@@ -52,7 +54,7 @@
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(121, 26);
             this.panel2.TabIndex = 1;
-            this.panel2.Tag = "platform";
+            this.panel2.Tag = "tile_22";
             // 
             // panel3
             // 
@@ -89,10 +91,30 @@
             this.panel6.TabIndex = 3;
             this.panel6.Tag = "player";
             // 
+            // panel8
+            // 
+            this.panel8.BackColor = System.Drawing.Color.SaddleBrown;
+            this.panel8.Location = new System.Drawing.Point(499, 285);
+            this.panel8.Name = "panel8";
+            this.panel8.Size = new System.Drawing.Size(45, 36);
+            this.panel8.TabIndex = 14;
+            this.panel8.Tag = "tile_dead1.1";
+            // 
+            // panel7
+            // 
+            this.panel7.BackColor = System.Drawing.Color.SaddleBrown;
+            this.panel7.Location = new System.Drawing.Point(543, 285);
+            this.panel7.Name = "panel7";
+            this.panel7.Size = new System.Drawing.Size(45, 36);
+            this.panel7.TabIndex = 15;
+            this.panel7.Tag = "tile_dead1.2";
+            // 
             // MapLevel2
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.panel8);
+            this.Controls.Add(this.panel7);
             this.Controls.Add(this.panel6);
             this.Controls.Add(this.panel5);
             this.Controls.Add(this.panel4);
@@ -113,5 +135,7 @@
         private System.Windows.Forms.Panel panel4;
         private System.Windows.Forms.Panel panel5;
         private System.Windows.Forms.Panel panel6;
+        private System.Windows.Forms.Panel panel8;
+        private System.Windows.Forms.Panel panel7;
     }
 }
