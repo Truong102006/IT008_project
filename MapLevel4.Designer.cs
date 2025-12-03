@@ -39,59 +39,65 @@
             // panel1
             // 
             this.panel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.panel1.Location = new System.Drawing.Point(53, 161);
+            this.panel1.Location = new System.Drawing.Point(80, 252);
+            this.panel1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(121, 26);
+            this.panel1.Size = new System.Drawing.Size(182, 41);
             this.panel1.TabIndex = 0;
             this.panel1.Tag = "platform";
             // 
             // panel2
             // 
             this.panel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.panel2.Location = new System.Drawing.Point(281, 92);
+            this.panel2.Location = new System.Drawing.Point(422, 144);
+            this.panel2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(121, 26);
+            this.panel2.Size = new System.Drawing.Size(182, 41);
             this.panel2.TabIndex = 1;
             this.panel2.Tag = "platform";
             // 
             // panel3
             // 
             this.panel3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.panel3.Location = new System.Drawing.Point(207, 269);
+            this.panel3.Location = new System.Drawing.Point(310, 420);
+            this.panel3.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(121, 26);
+            this.panel3.Size = new System.Drawing.Size(182, 41);
             this.panel3.TabIndex = 1;
             this.panel3.Tag = "platform";
             // 
             // panel4
             // 
             this.panel4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.panel4.Location = new System.Drawing.Point(53, 401);
+            this.panel4.Location = new System.Drawing.Point(80, 627);
+            this.panel4.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(121, 26);
+            this.panel4.Size = new System.Drawing.Size(182, 41);
             this.panel4.TabIndex = 1;
             this.panel4.Tag = "platform";
             // 
             // panel5
             // 
             this.panel5.BackColor = System.Drawing.Color.Yellow;
-            this.panel5.Location = new System.Drawing.Point(350, 12);
+            this.panel5.Location = new System.Drawing.Point(525, 19);
+            this.panel5.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.panel5.Name = "panel5";
-            this.panel5.Size = new System.Drawing.Size(52, 83);
+            this.panel5.Size = new System.Drawing.Size(78, 130);
             this.panel5.TabIndex = 2;
             this.panel5.Tag = "door";
             // 
             // panel6
             // 
-            this.panel6.Location = new System.Drawing.Point(56, 317);
+            this.panel6.Location = new System.Drawing.Point(84, 495);
+            this.panel6.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.panel6.Name = "panel6";
-            this.panel6.Size = new System.Drawing.Size(49, 78);
+            this.panel6.Size = new System.Drawing.Size(74, 122);
             this.panel6.TabIndex = 3;
             this.panel6.Tag = "player";
             // 
             // MapLevel4
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.panel6);
             this.Controls.Add(this.panel5);
@@ -99,8 +105,9 @@
             this.Controls.Add(this.panel3);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
+            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "MapLevel4";
-            this.Size = new System.Drawing.Size(1087, 607);
+            this.Size = new System.Drawing.Size(1630, 948);
             this.ResumeLayout(false);
 
         }
