@@ -36,6 +36,7 @@
             this.panel6 = new System.Windows.Forms.Panel();
             this.panel8 = new System.Windows.Forms.Panel();
             this.panel7 = new System.Windows.Forms.Panel();
+            this.panel14 = new System.Windows.Forms.Panel();
             this.SuspendLayout();
             // 
             // panel1
@@ -109,10 +110,21 @@
             this.panel7.TabIndex = 15;
             this.panel7.Tag = "tile_dead1.2";
             // 
+            // panel14
+            // 
+            this.panel14.BackColor = System.Drawing.Color.SaddleBrown;
+            this.panel14.Location = new System.Drawing.Point(232, 441);
+            this.panel14.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.panel14.Name = "panel14";
+            this.panel14.Size = new System.Drawing.Size(50, 73);
+            this.panel14.TabIndex = 16;
+            this.panel14.Tag = "deco_arm1";
+            // 
             // MapLevel2
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.panel14);
             this.Controls.Add(this.panel8);
             this.Controls.Add(this.panel7);
             this.Controls.Add(this.panel6);
@@ -137,5 +149,6 @@
         private System.Windows.Forms.Panel panel6;
         private System.Windows.Forms.Panel panel8;
         private System.Windows.Forms.Panel panel7;
+        private System.Windows.Forms.Panel panel14;
     }
 }

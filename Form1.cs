@@ -267,6 +267,7 @@ namespace LapTrinhTrucQuangProjectTest
             AddTileImage("deco_cay3", "deco_cay3.png");
             AddTileImage("deco_da1", "deco_da1.png");
             AddTileImage("deco_da2", "deco_da2.png");
+            AddTileImage("deco_arm1", "deco_arm1.png");
             AddTileImage("trap_1", "trap_1.png");
             AddTileImage("water_2", "water4-resized.gif");
             AddTileImage("water_3", "water4-rotated.gif");
@@ -807,6 +808,16 @@ namespace LapTrinhTrucQuangProjectTest
             currentAnim?.Reset(); // reset khung hình sau khi chuyển trạng thái
         }
 
+        private void panel48_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void panel55_Paint_1(object sender, PaintEventArgs e)
+        {
+
+        }
+
 
         // ===== INPUT =====
         private void KeyIsDown(object sender, KeyEventArgs e)
@@ -1103,13 +1114,17 @@ namespace LapTrinhTrucQuangProjectTest
                 e.Graphics.DrawRectangle(borderPen, barX, barY, barW, barH);
             }
 
-            // VẼ ĐIỂM SỐ ( ngay dưới thanh máu )
+            // VẼ ĐIỂM SỐ 
             string scoreText = "SCORE: " + score.ToString(); //"SCORE: 5"
 
-            using (Font scoreFont = new Font("Arial", 14, FontStyle.Bold))
+            using (Font scoreFont = new Font("Arial", 12, FontStyle.Bold))
             {
-                float scoreX = barX - 43; // canh sao cho ngang hàng với chữ HP
-                float scoreY = barY + 30; // bên dưới thanh máu 30px
+                // Đo kích thước chữ để căn phải
+                SizeF textSize = e.Graphics.MeasureString(scoreText, scoreFont);
+
+                // Tọa độ X = Chiều rộng màn hình - Chiều rộng chữ - Lề phải (20px)
+                float scoreX = baseWidth - textSize.Width - 20;
+                float scoreY = 10; // Cách lề trên 20px
 
                 // Vẽ bóng đen cho chữ nổi bật
                 e.Graphics.DrawString(scoreText, scoreFont, Brushes.Black, scoreX + 2, scoreY + 2);
