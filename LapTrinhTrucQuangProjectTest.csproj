@@ -110,6 +110,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -320,6 +321,13 @@
     <Content Include="Images\water4.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="Resources\EX.png" />
+    <None Include="Resources\OT.png" />
+    <None Include="Resources\NG.png" />
+    <None Include="Resources\NG1.png" />
+    <None Include="Resources\592860152_1749478712417577_6849899551038598948_n.png" />
+    <None Include="Resources\591584381_1935790934000952_3935662209807614271_n.png" />
+    <None Include="Resources\background_menu.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -202,7 +202,33 @@ namespace LapTrinhTrucQuangProjectTest
         bool facingRight = true;
         readonly Stopwatch sw = new Stopwatch(); // dùng để do dt chính xác
 
-        public Form1() { InitializeComponent(); }
+        public Form1()
+        {
+            InitializeComponent();
+
+            // 1. Cấu hình hiển thị Menu
+            pnlMenu.Visible = true;
+            pnlMenu.BringToFront(); // Đưa Menu lên lớp trên cùng
+            pnlGame.Visible = false;
+
+        }
+        private void btnNewGame_Click(object sender, EventArgs e)
+        {
+            // 1. Ẩn Menu đi để lộ game bên dưới
+            pnlMenu.Visible = false;
+
+            // 2. Bắt đầu tính toán game
+            gameTimer.Start();
+
+            // 3. Quan trọng: Lấy lại sự tập trung cho bàn phím
+            this.Focus();
+        }
+
+        private void btnExit_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -445,8 +471,8 @@ namespace LapTrinhTrucQuangProjectTest
         // ===== WINDOW & GAME LOOP =====
         private void UpdateScale()
         {
-            int w = Math.Max(1, this.ClientSize.Width);
-            int h = Math.Max(1, this.ClientSize.Height);
+            int w = Math.Max(1, pnlGame.ClientSize.Width);
+            int h = Math.Max(1, pnlGame.ClientSize.Height);
             // lấy chiều rộng w và chiều dài h hiện tại của cửa sổ game với kích thước tối thiểu là 1
             scaleX = (float)w / baseWidth;
             scaleY = (float)h / baseHeight;
@@ -924,7 +950,7 @@ namespace LapTrinhTrucQuangProjectTest
             enemyAnim.Update(dt);
             bossAnim.Update(dt);
             // DEBUG: nhìn state/moving trực tiếp ở title
-            //this.Text = $"State={currentState}  movingNow={(player.X != prevX)}  goL={goLeft} goR={goRight}  onGround={onGround}";
+            //pnlGame.Text = $"State={currentState}  movingNow={(player.X != prevX)}  goL={goLeft} goR={goRight}  onGround={onGround}";
 
 
             Invalidate();
@@ -951,12 +977,33 @@ namespace LapTrinhTrucQuangProjectTest
             {
                 if (e.KeyCode == Keys.Enter)
                 {
-                    // Reset game khi bấm Enter
-                    isGameOver = false;
-                    currentHealth = maxHealth;
-                    CreateLevel1(); // Hoặc load lại level hiện tại tùy bạn
-                    currentLevel = 1; // Reset về màn 1 (nếu muốn)
+                    // Khi Enter được nhấn, reset lại trạng thái game
+                    isGameOver = false;           // Đánh dấu game không còn ở trạng thái Game Over
+                    currentHealth = maxHealth;    // Reset máu về giá trị tối đa
+                    score = 0;                    // Reset điểm số về 0
+                    currentLevel = 1;             // Đặt lại level về màn đầu tiên
+
+                    // Reset trạng thái nhảy và tiếp đất
+                    jumping = false;
+                    onGround = false;
+
+                    // Đặt lại vị trí nhân vật về điểm spawn ban đầu
+                    player.X = startX;
+                    player.Y = startY;
+
+                    // Ẩn menu và hiển thị game
+                    pnlMenu.Visible = false;      // Ẩn menu
+                    pnlGame.Visible = true;       // Hiển thị game
+
+                    // Đảm bảo game luôn ở trên cùng
+                    pnlGame.BringToFront();
+
+                    // Tạo lại level 1 và nền
+                    CreateLevel1();
+
+                    // Bắt đầu lại gameTimer (nếu chưa bắt đầu hoặc đã dừng lại)
                     gameTimer.Start();
+
                 }
                 return; // Không làm gì khác khi đang Game Over
             }
@@ -987,6 +1034,16 @@ namespace LapTrinhTrucQuangProjectTest
                 // Reset lại nhạc hoặc các thứ khác nếu cần
                 gameTimer.Start();
             }
+        }
+
+        private void pnlMenu_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void pnlGame_Paint(object sender, PaintEventArgs e)
+        {
+
         }
 
         private void KeyIsUp(object sender, KeyEventArgs e)
@@ -1048,7 +1105,7 @@ namespace LapTrinhTrucQuangProjectTest
             tiles.Clear();
             enemies.Clear();
             coin.Clear();
-            // Thay 'this.Controls' bằng 'container.Controls'
+            // Thay 'pnlGame.Controls' bằng 'container.Controls'
             foreach (Control c in container.Controls)
             {
                 string tag = c.Tag?.ToString(); // Lấy tag an toàn
@@ -1104,8 +1161,8 @@ namespace LapTrinhTrucQuangProjectTest
         }
         private void CreateLevel1()
         {
-            // 'this' nghĩa là lấy map ngay trên Form1 hiện tại
-            LoadMapFromContainer(this);
+            // 'pnlGame' nghĩa là lấy map ngay trên Form1 hiện tại
+            LoadMapFromContainer(pnlGame);
             LoadBackground(@"Images\background1.gif");
         }
         private void CreateLevel2()
@@ -1370,7 +1427,7 @@ namespace LapTrinhTrucQuangProjectTest
                 else
                 {
                     // Dự phòng: Nếu ảnh lỗi thì vẽ chữ tạm
-                    e.Graphics.DrawString("GAME OVER", this.Font, Brushes.Red, 100, 100);
+                    e.Graphics.DrawString("GAME OVER", pnlGame.Font, Brushes.Red, 100, 100);
                 }
 
                 // 3. Vẽ dòng hướng dẫn "Press Enter"
