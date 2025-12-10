@@ -28,6 +28,7 @@ namespace LapTrinhTrucQuangProjectTest
         List<Rectangle> platforms = new List<Rectangle>();
         List<Rectangle> coin = new List<Rectangle>();
         List<Tile> tiles = new List<Tile>();
+        List<Enemy> enemies = new List<Enemy>();
         Dictionary<string, Bitmap> tileAssets = new Dictionary<string, Bitmap>(); // Khai báo Kho chứa (Dictionary) chứa các ô tilesets, Key (string) là Tag của ô, Value (Bitmap) là hình ảnh của ô        
         Timer gameTimer = new Timer();
 
@@ -40,7 +41,7 @@ namespace LapTrinhTrucQuangProjectTest
 
         // Tinh chỉnh hitbox (px): co bớt trên/dưới + trước/sau (mặt trước co nhiều hơn)
         const int HB_TOP = 11, HB_BOTTOM = 1;
-        const int HB_BACK = 10, HB_FRONT = 10;      
+        const int HB_BACK = 2, HB_FRONT = 18;      
 
         // ===== ANIM ===== (chỉ Run & Jump)
         enum AnimState { Idle, Run, Jump }        
@@ -55,6 +56,21 @@ namespace LapTrinhTrucQuangProjectTest
             {
                 Rect = new Rectangle(x, y, w, h);
                 Type = type;
+            }
+        }
+        class Enemy
+        {
+            public Rectangle Rect;
+            public int Speed = 1;
+            public bool FacingRight = false; // Mặc định đi sang trái
+            public bool IsDead = false;      // Trạng thái sống/chết
+            //Thêm chỉ số cho Boss 
+            public int MaxHP = 1;     // Máu tối đa (Quái thường = 1, Boss = 5)
+            public int CurrentHP = 1; // Máu hiện tại
+            public bool IsBoss = false; // Đánh dấu đây có phải Boss không
+            public Enemy(int x, int y, int w, int h)
+            {
+                Rect = new Rectangle(x, y, w, h);
             }
         }
         // Thuộc tính ảo: Tự động nối 2 danh sách lại mỗi khi được gọi, dùng thuộc tính AllSolids này để gộp các thuộc tính của tiles và platforms lại với nhau để xử lí va chạm vì chúng có chung tính chất đều là vật thể rắn trong game
@@ -169,6 +185,8 @@ namespace LapTrinhTrucQuangProjectTest
         private readonly string IdlePath = @"Images\Punk_idle.png";
         private readonly string DoorPath = @"Images\flag.png";
         private readonly string CoinPath = @"Images\coin_1.png";
+        private readonly string EnemyPath = @"Images\enemy.png";
+        private readonly string BossPath = @"Images\boss.png";
 
         // Anim: tạo 3 đối tượng class SpriteAnim để quản lý hoạt ảnh nhân vật cho 3 hành động khác nhau
         SpriteAnim runAnim = new SpriteAnim { FPS = 10, Loop = true }; // chạy chậm lại
@@ -176,6 +194,8 @@ namespace LapTrinhTrucQuangProjectTest
         SpriteAnim idleAnim = new SpriteAnim { FPS = 6, Loop = true };
         SpriteAnim doorAnim = new SpriteAnim { FPS = 10, Loop = true };
         SpriteAnim coinAnim = new SpriteAnim { FPS = 9, Loop = true };
+        SpriteAnim enemyAnim = new SpriteAnim { FPS = 8, Loop = true }; // Animation cho quái
+        SpriteAnim bossAnim = new SpriteAnim { FPS = 6, Loop = true };
 
         AnimState currentState = AnimState.Idle;
         SpriteAnim currentAnim;
@@ -203,6 +223,8 @@ namespace LapTrinhTrucQuangProjectTest
             LoadAnimationEven(IdlePath, idleAnim, 4, alphaThreshold: 16, tightenEdges: false);
             LoadAnimationEven(DoorPath, doorAnim, 7, alphaThreshold: 0, tightenEdges: true);
             LoadAnimationEven(CoinPath, coinAnim, 7, alphaThreshold: 0, tightenEdges: true);
+            LoadAnimationEven(EnemyPath, enemyAnim, 6, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(BossPath, bossAnim, 8, alphaThreshold: 16, tightenEdges: true);
 
             currentAnim = idleAnim; currentAnim.Reset();
             // Khởi động nhân vật, đặt trạng thái của nhân vật về Idle và tua về khung hình đầu tiên
@@ -267,7 +289,6 @@ namespace LapTrinhTrucQuangProjectTest
             AddTileImage("deco_cay3", "deco_cay3.png");
             AddTileImage("deco_da1", "deco_da1.png");
             AddTileImage("deco_da2", "deco_da2.png");
-            AddTileImage("deco_arm1", "deco_arm1.png");
             AddTileImage("trap_1", "trap_1.png");
             AddTileImage("water_2", "water4-resized.gif");
             AddTileImage("water_3", "water4-rotated.gif");
@@ -468,12 +489,131 @@ namespace LapTrinhTrucQuangProjectTest
 
             int prevX = player.X;
             int prevY = player.Y;
-
-            // Xử lí tương tác với trap và water:
+            bool prevFace = facingRight;// lưu hướng quay mặt cũ lại
+            Rectangle prevColl = GetCollRect(new Rectangle(prevX, prevY, player.Width, player.Height), prevFace);
+            // prevColl có tác dụng lưu lại vị trí cũ trước khi di chuyển của nhân vật để phòng các trường hợp nhân vật di chuyển bị bug
             Rectangle playerHitbox = GetCollRect(player, facingRight);
+            for (int i = enemies.Count - 1; i >= 0; i--)
+            {
+                Enemy en = enemies[i];
+                if (en.IsDead) continue;
+
+                // A. Di chuyển
+                int moveStep = en.FacingRight ? en.Speed : -en.Speed;
+                // nếu đang quay sang phải thì tốc độ là dương, nếu quay sang trái thì tốc độ là âm
+                en.Rect.X += moveStep;
+                // với tốc độ dương thì X của nhân vật sẽ di chuyển sang phải (đi thẳng), còn tốc độ âm thì sang trái (đi hướng ngược lại).
+                en.Rect.Y += 4;
+                // B. AI: Quay đầu khi gặp tường hoặc hết đường
+                // Tạo cảm biến: 1 cái check tường (ngang), 1 cái check đất (dưới chân)
+                int sensorX = en.FacingRight ? (en.Rect.Right + 2) : (en.Rect.Left - 2);
+                Rectangle wallSensor = new Rectangle(sensorX, en.Rect.Y, 2, en.Rect.Height - 5);               
+                Rectangle groundSensor = new Rectangle(sensorX, en.Rect.Bottom, 2, 2);
+
+                bool hitWall = false;
+                bool hasGround = false;
+                foreach (var p in Solid)
+                {
+                    // Nếu Boss rơi trúng platform
+                    if (en.Rect.IntersectsWith(p))
+                    {
+                        // Nếu đang ở trên platform thì đẩy ngược lên cho đứng vừa khít
+                        if (en.Rect.Bottom > p.Top && en.Rect.Top < p.Top) // bottom của enemy hitbox nếu lớn hơn top của p tức là enemy đang nhảy từ trên xuống platform còn top của enemy bé hơn top của p tức là đầu của enemy đã xuyên qua platform
+                        {
+                            en.Rect.Y = p.Top - en.Rect.Height; // nếu enemy đang nhảy từ trên xuống và top đã xuyên qua platform thì cho nhân vật đứng ngay ở trên platform bằng cách cho đáy của hitbox enemy = top của platform đi lên một khoảng bằng chiều cao của hitbox enemy
+                        }
+                    }
+                }
+                foreach (var p in Solid)
+                {
+                    if (wallSensor.IntersectsWith(p)) hitWall = true;
+                    if (groundSensor.IntersectsWith(p)) hasGround = true;
+
+                }
+
+                if (hitWall || !hasGround)
+                {
+                    en.FacingRight = !en.FacingRight; // Đổi hướng
+                }
+
+                // C. Tương tác với Player
+                if (playerHitbox.IntersectsWith(en.Rect))
+                {
+                    bool isFallingAttack = !onGround && jumpSpeed <= 0;
+                    // Nếu là Boss thì hitbox to hơn nên cần nới lỏng điều kiện isAbove một chút (+20)
+                    bool isAbove = prevColl.Bottom <= en.Rect.Top + (en.Rect.Height / 2);
+
+                    if (isFallingAttack && isAbove)
+                    {
+                        // ==> PLAYER ĐẠP TRÚNG ĐẦU
+
+                        // 1. Trừ máu quái
+                        en.CurrentHP--;
+
+                        // 2. Nảy người chơi lên
+                        jumping = true;
+                        onGround = false;
+                        jumpSpeed = 15;
+
+                        // 3. Kiểm tra chết
+                        if (en.CurrentHP <= 0)
+                        {
+                            en.IsDead = true;
+                            score += (en.IsBoss ? 100 : 5); // Boss cho nhiều điểm
+
+                            // Nếu Boss chết -> Thắng game luôn (hoặc hiện cửa)
+                            if (en.IsBoss)
+                            {
+                                MessageBox.Show("YOU WIN! Đã tiêu diệt Boss!");
+                                // Có thể gọi NextLevel() hoặc EndGame() ở đây
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // ==> PLAYER BỊ ĐÁNH (Thua)
+
+                        // --- SỬA ĐỔI Ở ĐÂY: TẠO VÙNG SÁT THƯƠNG NHỎ HƠN ---
+                        // Tạo một hình chữ nhật nhỏ hơn nằm bên trong con quái
+                        // X + 10: Thụt vào bên trái 10px
+                        // Y + 20: Thụt xuống từ đỉnh đầu 20px (để phần đầu an toàn hơn)
+                        // Width - 20: Tổng thu hẹp chiều ngang (10 trái + 10 phải)
+                        // Height - 20: Tổng thu hẹp chiều dọc
+                        Rectangle damageZone = new Rectangle(
+                            en.Rect.X + 10,
+                            en.Rect.Y + 20,
+                            Math.Max(1, en.Rect.Width - 20),
+                            Math.Max(1, en.Rect.Height - 20)
+                        );
+
+                        // Chỉ khi Player chạm vào "LÕI" (damageZone) này thì mới bị mất máu
+                        // Còn nếu chỉ chạm vào rìa ngoài (10px) thì không sao cả
+                        if (playerHitbox.IntersectsWith(damageZone))
+                        {
+                            if (currentHealth > 0)
+                            {
+                                // Boss đánh đau hơn (30 máu), quái thường (20 máu)
+                                currentHealth -= (en.IsBoss ? 30 : 20);
+
+                                // Hiệu ứng bị đẩy lùi (Knockback)
+                                if (player.X < en.Rect.X) player.X -= 50; // Đẩy mạnh hơn
+                                else player.X += 50;
+
+                                if (currentHealth <= 0)
+                                {
+                                    currentHealth = 0; score = 0; isGameOver = true;
+                                    gameTimer.Stop(); Invalidate(); return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            // Xử lí tương tác với trap và water:
             bool hitTrap = false; // Frame này đã dính bẫy chưa?
             isSubmerged = false;  // Reset trạng thái nước mỗi khung hình
             isCollected = false; // Reset trạng thái nhặt coin mỗi khung hình
+
             foreach (var t in tiles)
             {
                 if (t.Type.StartsWith("water_"))
@@ -516,13 +656,6 @@ namespace LapTrinhTrucQuangProjectTest
                     }
                 }
             }
-
-            // lưu vị trí trước khi nhân vật di chuyển để gặp vấn đề thì quay lại chỗ cũ
-            bool prevFace = facingRight;
-            // lưu hướng quay mặt cũ lại
-            Rectangle prevColl = GetCollRect(new Rectangle(prevX, prevY, player.Width, player.Height), prevFace);
-            // prevColl có tác dụng lưu lại vị trí cũ trước khi di chuyển của nhân vật để phòng các trường hợp nhân vật di chuyển bị bug
-
             // Điều khiển trái/phải + hướng vẽ
             if (goLeft) { player.X -= playerSpeed; facingRight = false; }
             if (goRight) { player.X += playerSpeed; facingRight = true; }
@@ -680,8 +813,9 @@ namespace LapTrinhTrucQuangProjectTest
                                   (bottom >= p.Top - 2) && // lúc hiện tại chân đã ở dưới mặt gạch tối thiểu 2 pixel
                                   (overlap >= minSupportCross)); // phải có độ chồng lên tối thiểu là 2 pixel
 
-                int needStickOverlap = (groundedIndex == i) ? 1 : minSupportStick;
-                // Nếu đang đứng vững trên bệ thứ i thì nới điều kiện chồng pixel xuống 1px
+                // Nếu trước đó đang đứng trên đất (wasGrounded), thì cho phép chuyển sang bất kỳ cục gạch nào khác
+                // miễn là có chồng lên nhau dù chỉ 1px.
+                int needStickOverlap = wasGrounded ? 1 : minSupportStick;
 
                 bool keepStick =
                     wasGrounded && !rising && // nếu đang đứng vững và đang không nhảy lên
@@ -787,11 +921,12 @@ namespace LapTrinhTrucQuangProjectTest
             doorAnim.Update(dt);
             coinAnim.Update(dt);
             // gọi hàm tương tự cho animation cửa qua màn và coin trong game
-
+            enemyAnim.Update(dt);
+            bossAnim.Update(dt);
             // DEBUG: nhìn state/moving trực tiếp ở title
             //this.Text = $"State={currentState}  movingNow={(player.X != prevX)}  goL={goLeft} goR={goRight}  onGround={onGround}";
 
-            
+
             Invalidate();
             // gửi yêu cầu vẽ lại toàn bộ Form, kích hoạt hàm OnPaint() để hiển thị mọi thay đổi về vị trí, hình ảnh và trạng thái 
         }
@@ -806,16 +941,6 @@ namespace LapTrinhTrucQuangProjectTest
                 case AnimState.Jump: currentAnim = jumpAnim; break;
             }
             currentAnim?.Reset(); // reset khung hình sau khi chuyển trạng thái
-        }
-
-        private void panel48_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void panel55_Paint_1(object sender, PaintEventArgs e)
-        {
-
         }
 
 
@@ -847,6 +972,20 @@ namespace LapTrinhTrucQuangProjectTest
                     jumpSpeed = force;
                     onGround = false;
                 }
+            }
+            // CHEAT CODE: Bấm phím số 6 để bay tới màn Boss
+            if (e.KeyCode == Keys.D6)
+            {
+                currentLevel = 6;
+                CreateLevel6();
+
+                // Reset lại máu và vị trí cho an toàn
+                currentHealth = maxHealth;
+                jumping = false;
+                onGround = false;
+
+                // Reset lại nhạc hoặc các thứ khác nếu cần
+                gameTimer.Start();
             }
         }
 
@@ -887,11 +1026,16 @@ namespace LapTrinhTrucQuangProjectTest
         private void NextLevel()
         {
             currentLevel++;
-            if (currentLevel > 5) { gameTimer.Stop(); MessageBox.Show("🎉 Bạn đã hoàn thành tất cả các màn!"); ; return; }
+            if (currentLevel > 6) { gameTimer.Stop(); MessageBox.Show("🎉 Bạn đã hoàn thành tất cả các màn!"); ; return; }
             platforms.Clear();
             // xóa hết dữ liệu platform của màn chơi cũ khỏi bộ nhớ
             switch (currentLevel)
-            { case 2: CreateLevel2(); break; case 3: CreateLevel3(); break; case 4: CreateLevel4(); break; case 5: CreateLevel5(); break; }
+            { case 2: CreateLevel2(); break; 
+              case 3: CreateLevel3(); break;
+              case 4: CreateLevel4(); break; 
+              case 5: CreateLevel5(); break;
+              case 6: CreateLevel6(); break;
+            }
             levelTransitioning = false;
             // tắt flag chuyển màn để chuẩn bị cho lần chạm cửa tiếp theo
         }
@@ -902,7 +1046,8 @@ namespace LapTrinhTrucQuangProjectTest
         {
             platforms.Clear(); // Xóa dữ liệu cũ
             tiles.Clear();
-
+            enemies.Clear();
+            coin.Clear();
             // Thay 'this.Controls' bằng 'container.Controls'
             foreach (Control c in container.Controls)
             {
@@ -932,6 +1077,24 @@ namespace LapTrinhTrucQuangProjectTest
                 {
                     player.X = c.Left;
                     player.Y = c.Top;
+                    c.Visible = false;
+                }
+                if (tag == "enemy")
+                {
+                    // Tạo quái tại vị trí Panel, kích thước chuẩn 40x40 (hoặc lấy c.Width, c.Height tùy bạn)
+                    enemies.Add(new Enemy(c.Left, c.Top, 40, 40));
+                    c.Visible = false;
+                }
+                if (tag == "boss")
+                {
+                    // Boss to hơn (80x80) và trâu hơn
+                    // Lấy kích thước thật từ Panel
+                    Enemy boss = new Enemy(c.Left, c.Top, c.Width, c.Height);
+                    boss.IsBoss = true;
+                    boss.MaxHP = 5; 
+                    boss.CurrentHP = 5;
+                    boss.Speed = 3;  
+                    enemies.Add(boss);
                     c.Visible = false;
                 }
             }
@@ -976,6 +1139,12 @@ namespace LapTrinhTrucQuangProjectTest
             map.Dispose();
         }
 
+        private void CreateLevel6()
+        {
+            MapLevel6 map = new MapLevel6();
+            LoadMapFromContainer(map);
+            map.Dispose();
+        }
         // ===== DRAW =====
         protected override void OnPaint(PaintEventArgs e)
         {
@@ -1071,10 +1240,54 @@ namespace LapTrinhTrucQuangProjectTest
                 }
             }
 
+            foreach (var en in enemies)
+            {
+                if (en.IsDead) continue;
+
+                if (en.IsBoss && bossAnim.Sheet != null)
+                {
+                    // Vẽ Boss
+                    bossAnim.Draw(e.Graphics, en.Rect, en.FacingRight);
+                }
+                else if (!en.IsBoss && enemyAnim.Sheet != null)
+                {
+                    // Vẽ Quái thường
+                    enemyAnim.Draw(e.Graphics, en.Rect, en.FacingRight);
+                }
+                else
+                {
+                    // Vẽ hộp dự phòng
+                    e.Graphics.FillRectangle(en.IsBoss ? Brushes.DarkRed : Brushes.Purple, en.Rect);
+                }
+
+                // 2. VẼ THANH MÁU TRÊN ĐẦU (Chỉ vẽ cho Boss hoặc nếu quái thường mất máu)
+                if (en.CurrentHP < en.MaxHP)
+                {
+                    int hpBarW = en.Rect.Width;
+                    int hpBarH = 5;
+                    int hpBarX = en.Rect.X;
+                    int hpBarY = en.Rect.Top - 10;
+
+                    // Vẽ nền đỏ (máu mất)
+                    e.Graphics.FillRectangle(Brushes.Red, hpBarX, hpBarY, hpBarW, hpBarH);
+                    // Vẽ máu xanh (máu còn)
+                    float hpPercent = (float)en.CurrentHP / en.MaxHP;
+                    e.Graphics.FillRectangle(Brushes.LimeGreen, hpBarX, hpBarY, (int)(hpBarW * hpPercent), hpBarH);
+                }
+            }
             // DEBUG: xem hitbox va chạm
             //var dbg = GetCollRect(player, facingRight);
-            //using (var pen = new Pen(Color.Lime, 1f / Math.Max(0.001f, scaleX)))
-            //    e.Graphics.DrawRectangle(pen, dbg);
+            using (var pen = new Pen(Color.Lime, 2))
+            {
+                // Vẽ khung xanh lá cho Player
+                //e.Graphics.DrawRectangle(pen, GetCollRect(player, facingRight));
+
+                // Vẽ khung đỏ cho Enemy/Boss
+                //foreach (var en in enemies)
+                //{
+                //    if (!en.IsDead) e.Graphics.DrawRectangle(Pens.Red, en.Rect);
+                //}
+            }
 
             // ===== VẼ GIAO DIỆN (UI) - THANH MÁU =====
             // 1. Cấu hình vị trí
@@ -1114,17 +1327,13 @@ namespace LapTrinhTrucQuangProjectTest
                 e.Graphics.DrawRectangle(borderPen, barX, barY, barW, barH);
             }
 
-            // VẼ ĐIỂM SỐ 
+            // VẼ ĐIỂM SỐ ( ngay dưới thanh máu )
             string scoreText = "SCORE: " + score.ToString(); //"SCORE: 5"
 
-            using (Font scoreFont = new Font("Arial", 12, FontStyle.Bold))
+            using (Font scoreFont = new Font("Arial", 14, FontStyle.Bold))
             {
-                // Đo kích thước chữ để căn phải
-                SizeF textSize = e.Graphics.MeasureString(scoreText, scoreFont);
-
-                // Tọa độ X = Chiều rộng màn hình - Chiều rộng chữ - Lề phải (20px)
-                float scoreX = baseWidth - textSize.Width - 20;
-                float scoreY = 10; // Cách lề trên 20px
+                float scoreX = barX - 43; // canh sao cho ngang hàng với chữ HP
+                float scoreY = barY + 450; // bên dưới thanh máu 450px
 
                 // Vẽ bóng đen cho chữ nổi bật
                 e.Graphics.DrawString(scoreText, scoreFont, Brushes.Black, scoreX + 2, scoreY + 2);

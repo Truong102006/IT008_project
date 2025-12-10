@@ -76,6 +76,12 @@
     <Compile Include="MapLevel5.Designer.cs">
       <DependentUpon>MapLevel5.cs</DependentUpon>
     </Compile>
+    <Compile Include="MapLevel6.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MapLevel6.Designer.cs">
+      <DependentUpon>MapLevel6.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
@@ -92,6 +98,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MapLevel5.resx">
       <DependentUpon>MapLevel5.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MapLevel6.resx">
+      <DependentUpon>MapLevel6.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -119,10 +128,10 @@
     <Content Include="Images\background1.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\coin_1.png">
+    <Content Include="Images\boss.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\deco_arm1.png">
+    <Content Include="Images\coin_1.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\deco_bui1.png">
@@ -159,6 +168,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\deco_da2.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\enemy.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\flag.png">
