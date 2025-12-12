@@ -33,23 +33,35 @@
             // 
             // btnNewGame
             // 
-            this.btnNewGame.BackColor = System.Drawing.Color.White;
-            this.btnNewGame.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.btnNewGame.Image = global::LapTrinhTrucQuangProjectTest.Properties.Resources.NG;
-            this.btnNewGame.Location = new System.Drawing.Point(470, 150);
+            this.btnNewGame.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.btnNewGame.BackColor = System.Drawing.Color.Transparent;
+            // Sử dụng BackgroundImage để hình ảnh co giãn tốt hơn
+            this.btnNewGame.BackgroundImage = global::LapTrinhTrucQuangProjectTest.Properties.Resources.NG;
+            this.btnNewGame.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            // Cấu hình FlatStyle để nút trong suốt và không có viền
+            this.btnNewGame.FlatAppearance.BorderSize = 0;
+            this.btnNewGame.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.btnNewGame.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+            this.btnNewGame.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            // Vị trí và kích thước mới nhất (lớn hơn)
+            this.btnNewGame.Location = new System.Drawing.Point(628, 224);
+            this.btnNewGame.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnNewGame.Name = "btnNewGame";
-            this.btnNewGame.Size = new System.Drawing.Size(132, 41);
+            this.btnNewGame.Size = new System.Drawing.Size(198, 64);
             this.btnNewGame.TabIndex = 0;
             this.btnNewGame.UseVisualStyleBackColor = false;
             this.btnNewGame.Click += new System.EventHandler(this.btnNewGame_Click);
             // 
             // MainMenuForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            // Sử dụng tỉ lệ DPI mới (12F, 25F) cho màn hình độ phân giải cao
+            this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(1069, 560);
+            // Kích thước Form mới nhất (lớn hơn)
+            this.ClientSize = new System.Drawing.Size(1604, 875);
             this.Controls.Add(this.btnNewGame);
+            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "MainMenuForm";
             this.Load += new System.EventHandler(this.MainMenuForm_Load_1);
             this.ResumeLayout(false);

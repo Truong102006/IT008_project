@@ -41,7 +41,7 @@ namespace LapTrinhTrucQuangProjectTest
         int? groundedIndex = null;
 
         const int HB_TOP = 11, HB_BOTTOM = 1;
-        const int HB_BACK = 2, HB_FRONT = 20;
+        const int HB_BACK = 11, HB_FRONT = 11;
 
         enum AnimState { Idle, Run, Jump }
 
@@ -95,6 +95,7 @@ namespace LapTrinhTrucQuangProjectTest
             public double FPS = 10;
             public bool Loop = true;
             double _accum;
+            public int DrawOffsetX = 0; //độ lệch vẽ (Mặc định 0)
 
             public void Reset() { _accum = 0; FrameIndex = 0; }
 
@@ -115,14 +116,19 @@ namespace LapTrinhTrucQuangProjectTest
             {
                 if (Sheet == null || Frames.Count == 0) return;
                 Rectangle src = Frames[FrameIndex];
-                DrawUtil.DrawRegion(g, Sheet, src, hitbox, facingRight);
+                // Truyền DrawOffsetX vào hàm vẽ
+                // Lưu ý: Khi quay trái (facingRight = false), ta có thể cần đảo dấu offset
+                // Thử nghiệm: Nếu quay phải lệch phải, quay trái lệch trái -> OK
+                int finalOffset = facingRight ? DrawOffsetX : -DrawOffsetX;
+
+                DrawUtil.DrawRegion(g, Sheet, src, hitbox, facingRight, finalOffset);
             }
         }
 
 
         static class DrawUtil
         {
-            public static void DrawRegion(Graphics g, Bitmap sheet, Rectangle src, Rectangle hitbox, bool facingRight)
+            public static void DrawRegion(Graphics g, Bitmap sheet, Rectangle src, Rectangle hitbox, bool facingRight, int xOffset = 0)
             {
                 float sx = (float)hitbox.Width / src.Width;
                 float sy = (float)hitbox.Height / src.Height;
@@ -130,18 +136,32 @@ namespace LapTrinhTrucQuangProjectTest
 
                 int w = (int)(src.Width * scale);
                 int h = (int)(src.Height * scale);
-                int x = hitbox.X + (hitbox.Width - w) / 2;
+                int x = hitbox.X + (hitbox.Width - w) / 2 + xOffset;
                 int y = hitbox.Bottom - h;
 
                 var st = g.Save();
+    
+                // Xử lý Lật hình (Flip) nếu nhân vật quay sang trái
                 if (!facingRight)
                 {
-                    g.TranslateTransform(x + w / 2f, 0);
+                    // Để lật hình tại chỗ mà không bị nhảy vị trí, ta phải xoay quanh TÂM của bức ảnh sẽ vẽ
+                    float centerX = x + w / 2.0f;
+
+                    // B1: Dời gốc toạ độ của bàn vẽ về đúng tâm bức ảnh
+                    g.TranslateTransform(centerX, 0);
+
+                    // B2: Lật ngược trục X (như soi gương)
                     g.ScaleTransform(-1, 1);
-                    g.TranslateTransform(-(x + w / 2f), 0);
+
+                    // B3: Dời gốc toạ độ ngược lại về vị trí cũ để không ảnh hưởng các hình khác
+                    g.TranslateTransform(-centerX, 0);
                 }
 
+                // 4. Vẽ ảnh lên màn hình
+                // Lưu ý: Lúc này toạ độ vẽ vẫn là (x, y, w, h), phép lật (nếu có) đã được xử lý bởi g.Transform ở trên
                 g.DrawImage(sheet, new Rectangle(x, y, w, h), src, GraphicsUnit.Pixel);
+
+                // 5. Khôi phục trạng thái đồ hoạ (Xóa bỏ phép xoay/lật vừa làm)
                 g.Restore(st);
             }
         }
@@ -196,6 +216,7 @@ namespace LapTrinhTrucQuangProjectTest
         public MapLevel1()
         {
             InitializeComponent();
+            CreateLevel1();
             // Gắn sự kiện Load vào hàm khởi tạo game
             this.Load += MapLevel1_Load;
             // Gắn sự kiện Resize của UserControl
@@ -213,9 +234,11 @@ namespace LapTrinhTrucQuangProjectTest
             DoubleBuffered = true;
             // XÓA: Text = ... (UserControl không có thanh tiêu đề)
 
-            player = new Rectangle(0, 440 - (40 - HB_BOTTOM), 40, 40);
-
-            CreateLevel1();
+            runAnim.DrawOffsetX = 8;
+            idleAnim.DrawOffsetX = 8;
+            jumpAnim.DrawOffsetX = 8;
+            // nếu cần đẩy sang trái thì dùng số âm
+            // runAnim.DrawOffsetX = -4;
 
             LoadAnimationEven(RunPath, runAnim, 6, alphaThreshold: 16, tightenEdges: false);
             LoadAnimationEven(JumpPath, jumpAnim, 4, alphaThreshold: 16, tightenEdges: false);
@@ -950,6 +973,7 @@ namespace LapTrinhTrucQuangProjectTest
                 {
                     player.X = c.Left;
                     player.Y = c.Top;
+                    player = new Rectangle(c.Left, c.Top, 40, 40);
                     c.Visible = false;
                 }
                 if (tag == "enemy")
