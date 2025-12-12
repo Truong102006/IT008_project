@@ -7,108 +7,149 @@ namespace LapTrinhTrucQuangProjectTest
 {
     public partial class MainMenuForm : Form
     {
-        // 1. Biến lưu trữ tài nguyên
         private Bitmap _backgroundImage;
-        private Panel contentPanel;      // Panel dùng để chứa màn chơi (Game Container)
+        private Panel contentPanel;
 
         public MainMenuForm()
         {
             InitializeComponent();
             this.Text = "Mini Parkour Game";
-
-            // Cấu hình Form chính
             this.KeyPreview = true;
-            this.StartPosition = FormStartPosition.CenterScreen; // Cho game hiện giữa màn hình
 
-            // 2. Tạo Dynamic Panel để chứa Game sau này
+            // 1. Kích hoạt DoubleBuffered để giảm giật cho toàn Form
+            this.DoubleBuffered = true;
+
+            // 2. Tạo Panel chứa Game
             contentPanel = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = Color.Transparent, // Để trong suốt lúc ở Menu
-                Name = "ContentPanel"
+                // QUAN TRỌNG: Không dùng Transparent nữa, dùng màu mặc định
+                BackColor = Color.Transparent,
+                // QUAN TRỌNG NHẤT: Ẩn nó đi ngay từ đầu
+                Visible = false
             };
 
-            // Thêm Panel vào Form
             this.Controls.Add(contentPanel);
 
-            // QUAN TRỌNG: Đẩy Panel ra sau cùng để nút btnNewGame (được tạo ở Designer) nổi lên trên
-            contentPanel.SendToBack();
-
-            // Gắn các sự kiện
+            // Các sự kiện
             this.Load += MainMenuForm_Load;
-            this.FormClosing += MainMenuForm_FormClosing; // Dùng FormClosing thay vì Disposed để an toàn hơn
+            this.Disposed += MainMenuForm_Disposed;
+            this.Resize += MainMenuForm_Resize;
         }
 
-        // --- SỰ KIỆN LOAD FORM ---
         private void MainMenuForm_Load(object sender, EventArgs e)
         {
-            // Nạp hình nền Menu
             try
             {
                 string imagePath = @"Images\background_menu.png";
                 if (File.Exists(imagePath))
                 {
                     _backgroundImage = (Bitmap)Image.FromFile(imagePath);
-                    this.BackgroundImage = _backgroundImage;
-                    this.BackgroundImageLayout = ImageLayout.Stretch;
                 }
             }
-            catch { /* Bỏ qua lỗi nếu không tìm thấy ảnh */ }
+            catch { }
 
-            // Đảm bảo nút New Game hiện lên
-            if (btnNewGame != null)
+            // Xóa sự kiện dư thừa
+            this.Load -= MainMenuForm_Load_1;
+        }
+
+        // Tự vẽ hình nền để mượt hơn (thay vì dùng BackgroundImage)
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            // Chỉ vẽ hình nền khi đang ở Menu (tức là nút New Game còn hiện)
+            if (this.btnNewGame != null && this.btnNewGame.Visible && _backgroundImage != null)
             {
-                btnNewGame.Visible = true;
-                btnNewGame.BringToFront();
+                e.Graphics.DrawImage(_backgroundImage, this.ClientRectangle);
             }
         }
 
-        // --- SỰ KIỆN CLICK NÚT NEW GAME ---
+        // Logic co giãn nút New Game (Code cũ của bạn vẫn tốt)
+        // Trong MainMenuForm.cs
+
+        private void MainMenuForm_Resize(object sender, EventArgs e)
+        {
+            this.Invalidate();
+            if (btnNewGame != null && btnNewGame.Visible)
+            {
+                // 1. Giữ nguyên công thức chiều rộng (bạn đã chốt tỉ lệ này)
+                int newWidth = this.ClientSize.Width / 8;
+                int newHeight = newWidth / 3;
+
+                // Giới hạn nhỏ nhất
+                if (newWidth < 120) { newWidth = 120; newHeight = 35; }
+
+                btnNewGame.Size = new Size(newWidth, newHeight);
+
+                // 2. Căn giữa theo chiều ngang (Giữ nguyên)
+                btnNewGame.Left = (this.ClientSize.Width - btnNewGame.Width) / 2;
+
+                // --- 3. SỬA LẠI VỊ TRÍ DỌC (TOP) ---
+
+                // Cũ (Bị thấp): 
+                // btnNewGame.Top = (this.ClientSize.Height - btnNewGame.Height) / 2;
+
+                // Mới (Cao hơn, đúng thiết kế):
+                // Đặt nút ở vị trí 35% chiều cao màn hình (0.35)
+                // Nếu muốn cao hơn nữa thì giảm xuống 0.3, muốn thấp hơn thì tăng lên 0.4
+                btnNewGame.Top = (int)(this.ClientSize.Height * 0.27);
+
+                // 4. Chỉnh cỡ chữ (Giữ nguyên)
+                float fontSize = newHeight / 3.2f;
+                if (fontSize > 6)
+                    btnNewGame.Font = new Font(btnNewGame.Font.FontFamily, fontSize, FontStyle.Bold);
+            }
+        }
+
+        private void MainMenuForm_Disposed(object sender, EventArgs e)
+        {
+            _backgroundImage?.Dispose();
+        }
+
+        // --- HÀM START GAME ĐÃ ĐƯỢC SỬA ---
+        private void StartGameLevel1()
+        {
+            // 1. Tạm dừng vẽ giao diện
+            this.SuspendLayout();
+
+            // 2. Khởi tạo Game (Lúc này contentPanel vẫn đang Visible = false nên người dùng không thấy màn hình đen/trắng)
+            MapLevel1 gameLevel = new MapLevel1
+            {
+                Dock = DockStyle.Fill,
+                TabStop = true,
+                Name = "GameLevel1"
+            };
+
+            // 3. Dọn dẹp và Thêm Game vào Panel
+            contentPanel.Controls.Clear();
+            contentPanel.Controls.Add(gameLevel);
+
+            // 4. Ẩn nút New Game & Xóa hình nền Menu
+            if (btnNewGame != null)
+            {
+                btnNewGame.Visible = false;
+            }
+            // Xóa hình nền để giải phóng RAM và tránh vẽ đè bên dưới
+            _backgroundImage?.Dispose();
+            _backgroundImage = null;
+
+            // 5. BƯỚC QUAN TRỌNG NHẤT: Bật Panel hiện lên
+            // Lúc này Game đã load xong rồi, nên nó hiện ra ngay lập tức
+            contentPanel.Visible = true;
+            contentPanel.BringToFront();
+
+            // 6. Cho phép vẽ lại
+            this.ResumeLayout();
+
+            // 7. Focus vào game
+            gameLevel.Focus();
+        }
+
         private void btnNewGame_Click(object sender, EventArgs e)
         {
             StartGameLevel1();
         }
 
-        // --- LOGIC CHUYỂN CẢNH SANG GAME ---
-        private void StartGameLevel1()
-        {
-            // 1. Ẩn giao diện Menu
-            if (btnNewGame != null) btnNewGame.Visible = false;
-
-            // Xóa hình nền Menu đi cho nhẹ và đỡ rối mắt
-            this.BackgroundImage = null;
-
-            // 2. Cấu hình Panel chứa game
-            contentPanel.BackColor = Color.Black; // Đổi nền sang đen (hoặc màu của game)
-            contentPanel.Controls.Clear();        // Xóa sạch các màn chơi cũ (nếu có)
-            contentPanel.BringToFront();          // Đưa Panel lên lớp trên cùng
-
-            // 3. Khởi tạo MapLevel1 (UserControl)
-            MapLevel1 gameLevel = new MapLevel1
-            {
-                Dock = DockStyle.Fill, // Tràn viền
-                TabStop = true         // Cho phép nhận Focus
-            };
-
-            // 4. Thêm Game vào Panel
-            contentPanel.Controls.Add(gameLevel);
-
-            // 5. QUAN TRỌNG: Lấy tiêu điểm bàn phím cho Game
-            gameLevel.Focus();
-        }
-
-        // --- DỌN DẸP TÀI NGUYÊN ---
-        private void MainMenuForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            if (_backgroundImage != null)
-            {
-                _backgroundImage.Dispose();
-            }
-        }
-
-        // Hàm này do Designer tạo ra, để trống hoặc xóa đi cũng được
-        private void MainMenuForm_Load_1(object sender, EventArgs e)
-        {
-        }
+        private void MainMenuForm_Load_1(object sender, EventArgs e) { }
     }
 }
