@@ -27,7 +27,9 @@ namespace LapTrinhTrucQuangProjectTest
         int startY;
         Rectangle player, door;
         List<Rectangle> platforms = new List<Rectangle>();
-        List<Rectangle> coin = new List<Rectangle>();
+        List<Rectangle> coin1 = new List<Rectangle>();
+        List<Rectangle> coin2 = new List<Rectangle>(); 
+        List<Rectangle> trap = new List<Rectangle>();
         List<Tile> tiles = new List<Tile>();
         List<Enemy> enemies = new List<Enemy>();
         Dictionary<string, Bitmap> tileAssets = new Dictionary<string, Bitmap>();
@@ -39,7 +41,7 @@ namespace LapTrinhTrucQuangProjectTest
         int? groundedIndex = null;
 
         const int HB_TOP = 11, HB_BOTTOM = 1;
-        const int HB_BACK = 10, HB_FRONT = 10;
+        const int HB_BACK = 2, HB_FRONT = 20;
 
         enum AnimState { Idle, Run, Jump }
 
@@ -169,17 +171,21 @@ namespace LapTrinhTrucQuangProjectTest
         private readonly string JumpPath = @"Images\Punk_jump.png";
         private readonly string IdlePath = @"Images\Punk_idle.png";
         private readonly string DoorPath = @"Images\flag.png";
-        private readonly string CoinPath = @"Images\coin_1.png";
+        private readonly string CoinPath1 = @"Images\coin_1.png";
+        private readonly string CoinPath2 = @"Images\coin_2.png";
         private readonly string EnemyPath = @"Images\enemy.png";
         private readonly string BossPath = @"Images\boss.png";
+        private readonly string TrapPath = @"Images\trap_3.png";
 
         SpriteAnim runAnim = new SpriteAnim { FPS = 10, Loop = true };
         SpriteAnim jumpAnim = new SpriteAnim { FPS = 10, Loop = true };
         SpriteAnim idleAnim = new SpriteAnim { FPS = 6, Loop = true };
         SpriteAnim doorAnim = new SpriteAnim { FPS = 10, Loop = true };
-        SpriteAnim coinAnim = new SpriteAnim { FPS = 9, Loop = true };
+        SpriteAnim coinAnim1 = new SpriteAnim { FPS = 9, Loop = true };
+        SpriteAnim coinAnim2 = new SpriteAnim { FPS = 9, Loop = true };
         SpriteAnim enemyAnim = new SpriteAnim { FPS = 8, Loop = true };
         SpriteAnim bossAnim = new SpriteAnim { FPS = 6, Loop = true };
+        SpriteAnim trapAnim = new SpriteAnim { FPS = 20, Loop = true };
 
         AnimState currentState = AnimState.Idle;
         SpriteAnim currentAnim;
@@ -215,9 +221,11 @@ namespace LapTrinhTrucQuangProjectTest
             LoadAnimationEven(JumpPath, jumpAnim, 4, alphaThreshold: 16, tightenEdges: false);
             LoadAnimationEven(IdlePath, idleAnim, 4, alphaThreshold: 16, tightenEdges: false);
             LoadAnimationEven(DoorPath, doorAnim, 7, alphaThreshold: 0, tightenEdges: true);
-            LoadAnimationEven(CoinPath, coinAnim, 7, alphaThreshold: 0, tightenEdges: true);
+            LoadAnimationEven(CoinPath1, coinAnim1, 7, alphaThreshold: 0, tightenEdges: true);
+            LoadAnimationEven(CoinPath2, coinAnim2, 7, alphaThreshold: 0, tightenEdges: true);
             LoadAnimationEven(EnemyPath, enemyAnim, 6, alphaThreshold: 16, tightenEdges: true);
             LoadAnimationEven(BossPath, bossAnim, 8, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(TrapPath, trapAnim, 8, alphaThreshold: 16, tightenEdges: true);
 
             currentAnim = idleAnim; currentAnim.Reset();
             gameTimer.Interval = 16;
@@ -268,6 +276,7 @@ namespace LapTrinhTrucQuangProjectTest
             AddTileImage("tile_31", "tile_31.png");
             AddTileImage("tile_32", "tile_32.png");
             AddTileImage("tile_33", "tile_33.png");
+            AddTileImage("tile_invisible", "tile_invisible.png");
             AddTileImage("deco_bui1", "deco_bui1.png");
             AddTileImage("deco_bui2", "deco_bui2.png");
             AddTileImage("deco_bui3", "deco_bui3.png");
@@ -700,9 +709,29 @@ namespace LapTrinhTrucQuangProjectTest
             if (!onGround) groundedIndex = null;
 
 
-            // Giới hạn biên
-            if (player.X < 0) player.X = 0;
-            if (player.Right > baseWidth) player.X = baseWidth - player.Width;
+            //GIỚI HẠN BIÊN
+
+            // 1. Tính toán lề thụt vào hiện tại (Logic giống hệt GetCollRect)
+            // Để biết hitbox nhân vật cách mép ảnh bao xa
+            int currentLeftInset = facingRight ? HB_BACK : HB_FRONT;
+            int currentRightInset = facingRight ? HB_FRONT : HB_BACK;
+
+            // 2. Chặn bên TRÁI
+            // Thay vì chặn ở 0, ta cho phép X âm một đoạn đúng bằng lề trái
+            // Để Hitbox chạm đúng vào điểm 0
+            if (player.X < -currentLeftInset)
+            {
+                player.X = -currentLeftInset;
+            }
+
+            // 3. Chặn bên PHẢI
+            // Cho phép ảnh lấn ra ngoài màn hình một đoạn đúng bằng lề phải
+            // Để Hitbox chạm đúng vào điểm baseWidth
+            int rightLimit = baseWidth - player.Width + currentRightInset;
+            if (player.X > rightLimit)
+            {
+                player.X = rightLimit;
+            }
             if (player.Y > baseHeight)
             {
                 currentHealth -= 100;
@@ -739,13 +768,22 @@ namespace LapTrinhTrucQuangProjectTest
             }
 
             // Coin:
-            for (int i = coin.Count - 1; i >= 0; i--)
+            for (int i = coin1.Count - 1; i >= 0; i--)
             {
-                if (coll.IntersectsWith(coin[i]) && isCollected == false)
+                if (coll.IntersectsWith(coin1[i]) && isCollected == false)
+                {
+                    isCollected = true;                   
+                    score += 1;
+                    coin1.RemoveAt(i);
+                }
+            }
+            for (int i = coin2.Count - 1; i >= 0; i--)
+            {
+                if (coll.IntersectsWith(coin2[i]) && isCollected == false)
                 {
                     isCollected = true;
-                    score += 1;
-                    coin.RemoveAt(i);
+                    score += 5;
+                    coin2.RemoveAt(i);
                 }
             }
             // === Chọn state theo DI CHUYỂN THỰC TẾ ===
@@ -759,7 +797,9 @@ namespace LapTrinhTrucQuangProjectTest
 
             currentAnim?.Update(dt);
             doorAnim.Update(dt);
-            coinAnim.Update(dt);
+            coinAnim1.Update(dt);
+            coinAnim2.Update(dt);
+            trapAnim.Update(dt);
             enemyAnim.Update(dt);
             bossAnim.Update(dt);
 
@@ -818,6 +858,11 @@ namespace LapTrinhTrucQuangProjectTest
             }
         }
 
+        private void MapLevel1_Load_1(object sender, EventArgs e)
+        {
+
+        }
+
         private void KeyIsUp(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Left || e.KeyCode == Keys.A) goLeft = false;
@@ -868,7 +913,8 @@ namespace LapTrinhTrucQuangProjectTest
             platforms.Clear();
             tiles.Clear();
             enemies.Clear();
-            coin.Clear();
+            coin1.Clear();
+            coin2.Clear();
 
             // SỬ DỤNG container.Controls
             foreach (Control c in container.Controls)
@@ -890,9 +936,14 @@ namespace LapTrinhTrucQuangProjectTest
                     door = new Rectangle(c.Left, c.Top, c.Width, c.Height);
                     c.Visible = false;
                 }
-                if (tag != null && tag.StartsWith("coin_"))
+                if (tag != null && tag.StartsWith("coin_1"))
                 {
-                    coin.Add(new Rectangle(c.Left, c.Top, c.Width, c.Height));
+                    coin1.Add(new Rectangle(c.Left, c.Top, c.Width, c.Height));
+                    c.Visible = false;
+                }
+                if (tag != null && tag.StartsWith("coin_2"))
+                {
+                    coin2.Add(new Rectangle(c.Left, c.Top, c.Width, c.Height));
                     c.Visible = false;
                 }
                 if (tag == "player")
@@ -990,6 +1041,18 @@ namespace LapTrinhTrucQuangProjectTest
 
             foreach (var t in tiles)
             {
+                if (t.Type == "trap_3")
+                {
+                    if (trapAnim.Sheet != null)
+                    {
+                        trapAnim.Draw(e.Graphics, t.Rect, false);
+                    }
+                    else
+                    {
+                        e.Graphics.FillRectangle(Brushes.Red, t.Rect); 
+                    }
+                    continue;
+                }
                 if (tileAssets.ContainsKey(t.Type) && tileAssets[t.Type] != null)
                 {
                     Bitmap img = tileAssets[t.Type];
@@ -1019,18 +1082,39 @@ namespace LapTrinhTrucQuangProjectTest
                 e.Graphics.FillRectangle(Brushes.Gold, door);
             }
 
-            foreach (var c in coin)
+            foreach (var c in coin1)
             {
-                if (coinAnim.Sheet != null)
+                if (coinAnim1.Sheet != null)
                 {
-                    coinAnim.Draw(e.Graphics, c, true);
+                    coinAnim1.Draw(e.Graphics, c, true);
                 }
                 else
                 {
                     e.Graphics.FillRectangle(Brushes.Gold, c);
                 }
             }
-
+            foreach (var c in coin2)
+            {
+                if (coinAnim2.Sheet != null)
+                {
+                    coinAnim2.Draw(e.Graphics, c, true);
+                }
+                else
+                {
+                    e.Graphics.FillRectangle(Brushes.Gold, c);
+                }
+            }
+            foreach (var c in trap)
+            {
+                if (trapAnim.Sheet != null)
+                {
+                    trapAnim.Draw(e.Graphics, c, true);
+                }
+                else
+                {
+                    e.Graphics.FillRectangle(Brushes.Gold, c);
+                }
+            }
             foreach (var en in enemies)
             {
                 if (en.IsDead) continue;
@@ -1099,8 +1183,8 @@ namespace LapTrinhTrucQuangProjectTest
 
             using (Font scoreFont = new Font("Arial", 14, FontStyle.Bold))
             {
-                float scoreX = barX - 43;
-                float scoreY = barY + 30;
+                float scoreX = barX - 43; 
+                float scoreY = barY + 450;
 
                 e.Graphics.DrawString(scoreText, scoreFont, Brushes.Black, scoreX + 2, scoreY + 2);
                 e.Graphics.DrawString(scoreText, scoreFont, Brushes.Gold, scoreX, scoreY);
@@ -1150,7 +1234,6 @@ namespace LapTrinhTrucQuangProjectTest
             {
                 gameTimer?.Stop();
                 gameTimer?.Dispose();
-
                 runAnim.Sheet?.Dispose();
                 jumpAnim.Sheet?.Dispose();
                 idleAnim.Sheet?.Dispose();

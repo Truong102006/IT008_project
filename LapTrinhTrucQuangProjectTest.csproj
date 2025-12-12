@@ -46,11 +46,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Form1.cs">
+    <Compile Include="MainMenuForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="MainMenuForm.Designer.cs">
+      <DependentUpon>MainMenuForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MapLevel1.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MapLevel1.Designer.cs">
+      <DependentUpon>MapLevel1.cs</DependentUpon>
     </Compile>
     <Compile Include="MapLevel2.cs">
       <SubType>UserControl</SubType>
@@ -84,8 +90,11 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <EmbeddedResource Include="MainMenuForm.resx">
+      <DependentUpon>MainMenuForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MapLevel1.resx">
+      <DependentUpon>MapLevel1.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MapLevel2.resx">
       <DependentUpon>MapLevel2.cs</DependentUpon>
@@ -129,10 +138,16 @@
     <Content Include="Images\background1.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Images\background_menu.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Images\boss.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\coin_1.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\coin_2.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\deco_bui1.png">
@@ -300,7 +315,13 @@
     <Content Include="Images\tile_9.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Images\tile_invisible.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Images\trap_1.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\trap_3.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\water1.gif">
@@ -321,13 +342,7 @@
     <Content Include="Images\water4.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Include="Resources\EX.png" />
-    <None Include="Resources\OT.png" />
     <None Include="Resources\NG.png" />
-    <None Include="Resources\NG1.png" />
-    <None Include="Resources\592860152_1749478712417577_6849899551038598948_n.png" />
-    <None Include="Resources\591584381_1935790934000952_3935662209807614271_n.png" />
-    <None Include="Resources\background_menu.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

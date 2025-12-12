@@ -993,10 +993,6 @@ namespace LapTrinhTrucQuangProjectTest
 
                     // Ẩn menu và hiển thị game
                     pnlMenu.Visible = false;      // Ẩn menu
-                    pnlGame.Visible = true;       // Hiển thị game
-
-                    // Đảm bảo game luôn ở trên cùng
-                    pnlGame.BringToFront();
 
                     // Tạo lại level 1 và nền
                     CreateLevel1();
