@@ -25,6 +25,9 @@ namespace LapTrinhTrucQuangProjectTest
         bool isCollected = false;
         int startX;
         int startY;
+        private Size _originalFormSize;
+        private Rectangle _orgMenuRect;
+        private float _orgMenuFontSize;
         Rectangle player, door;
         List<Rectangle> platforms = new List<Rectangle>();
         List<Rectangle> coin1 = new List<Rectangle>();
@@ -216,11 +219,13 @@ namespace LapTrinhTrucQuangProjectTest
         public MapLevel1()
         {
             InitializeComponent();
+            
             CreateLevel1();
             // Gắn sự kiện Load vào hàm khởi tạo game
             this.Load += MapLevel1_Load;
             // Gắn sự kiện Resize của UserControl
             this.Resize += MapLevel1_Resize;
+           
         }
 
         // THAY ĐỔI TÊN HÀM: Form1_Load -> MapLevel1_Load
@@ -230,9 +235,17 @@ namespace LapTrinhTrucQuangProjectTest
             // THAY THẾ: this.Deactivate -> this.LostFocus
             // Ghi chú: Cần set TabStop=true cho UserControl để nó nhận được focus
             this.LostFocus += (s, e2) => { goLeft = false; goRight = false; };
-
+            
             DoubleBuffered = true;
             // XÓA: Text = ... (UserControl không có thanh tiêu đề)
+            _originalFormSize = this.ClientSize;
+
+            // Lưu thông số nút New Game
+            if (btnMenu != null)
+            {
+                _orgMenuRect = btnMenu.Bounds;
+                _orgMenuFontSize = btnMenu.Font.Size;
+            }
 
             runAnim.DrawOffsetX = 8;
             idleAnim.DrawOffsetX = 8;
@@ -440,6 +453,48 @@ namespace LapTrinhTrucQuangProjectTest
         private void MapLevel1_Resize(object sender, EventArgs e)
         {
             UpdateScale();
+            float xRatio = (float)this.ClientSize.Width / _originalFormSize.Width;
+            float yRatio = (float)this.ClientSize.Height / _originalFormSize.Height;
+            UpdateControlSize(btnMenu, _orgMenuRect, _orgMenuFontSize, xRatio, yRatio);
+        }
+        private void UpdateControlSize(Button btn, Rectangle originalRect, float originalFontSize, float xRatio, float yRatio)
+        {
+            if (btn == null) return;
+
+            // Tính vị trí và kích thước mới dựa trên tỷ lệ
+            int newX = (int)(originalRect.X * xRatio);
+            int newY = (int)(originalRect.Y * yRatio);
+            int newWidth = (int)(originalRect.Width * xRatio);
+            int newHeight = (int)(originalRect.Height * yRatio);
+
+            // Áp dụng vào nút
+            btn.Bounds = new Rectangle(newX, newY, newWidth, newHeight);
+        }
+        private void btnMenu_Click(object sender, EventArgs e)
+        {
+            // Dừng game khi bấm menu
+            if (gameTimer != null) gameTimer.Stop();
+
+            // Hiện hộp thoại hỏi
+            DialogResult result = MessageBox.Show("Bạn muốn về màn hình chính?", "Menu", MessageBoxButtons.YesNo);
+
+            if (result == DialogResult.Yes)
+            {
+                // ... code chuyển form ...
+                MainMenuForm menu = new MainMenuForm();
+                menu.Show();
+                // Tìm Form cha để đóng (vì đây là UserControl)
+                this.ParentForm.Close();
+            }
+            else
+            {
+                // Nếu chọn "NO" (Chơi tiếp)
+                if (gameTimer != null) gameTimer.Start();
+
+                // --- QUAN TRỌNG NHẤT: TRẢ LẠI QUYỀN ĐIỀU KHIỂN ---
+                this.Focus();
+                // --------------------------------------------------
+            }
         }
 
         private Rectangle GetCollRect(Rectangle r, bool faceRight)
@@ -1180,7 +1235,7 @@ namespace LapTrinhTrucQuangProjectTest
 
             // ===== VẼ GIAO DIỆN (UI) - THANH MÁU =====
             int barX = 50;
-            int barY = 20;
+            int barY = 10;
             int barW = 200;
             int barH = 20;
 

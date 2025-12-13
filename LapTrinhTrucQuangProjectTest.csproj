@@ -342,6 +342,9 @@
     <Content Include="Images\water4.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="Resources\MN.png" />
+    <None Include="Resources\EX1.png" />
+    <None Include="Resources\OT1.png" />
     <None Include="Resources\NG.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
