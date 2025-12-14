@@ -132,8 +132,6 @@
             this.panel114 = new System.Windows.Forms.Panel();
             this.panel116 = new System.Windows.Forms.Panel();
             this.panel117 = new System.Windows.Forms.Panel();
-            this.panel118 = new System.Windows.Forms.Panel();
-            this.panel119 = new System.Windows.Forms.Panel();
             this.panel120 = new System.Windows.Forms.Panel();
             this.panel121 = new System.Windows.Forms.Panel();
             this.panel122 = new System.Windows.Forms.Panel();
@@ -164,6 +162,10 @@
             this.panel147 = new System.Windows.Forms.Panel();
             this.panel149 = new System.Windows.Forms.Panel();
             this.panel86 = new System.Windows.Forms.Panel();
+            this.btnReset = new System.Windows.Forms.Button();
+            this.btnContinue = new System.Windows.Forms.Button();
+            this.btnHome = new System.Windows.Forms.Button();
+            this.btnMenu = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // panel54
@@ -1173,24 +1175,6 @@
             this.panel117.TabIndex = 85;
             this.panel117.Tag = "deco_da2";
             // 
-            // panel118
-            // 
-            this.panel118.BackColor = System.Drawing.Color.SaddleBrown;
-            this.panel118.Location = new System.Drawing.Point(950, 16);
-            this.panel118.Name = "panel118";
-            this.panel118.Size = new System.Drawing.Size(45, 36);
-            this.panel118.TabIndex = 105;
-            this.panel118.Tag = "coin_1";
-            // 
-            // panel119
-            // 
-            this.panel119.BackColor = System.Drawing.Color.SaddleBrown;
-            this.panel119.Location = new System.Drawing.Point(996, 5);
-            this.panel119.Name = "panel119";
-            this.panel119.Size = new System.Drawing.Size(45, 36);
-            this.panel119.TabIndex = 105;
-            this.panel119.Tag = "coin_1";
-            // 
             // panel120
             // 
             this.panel120.BackColor = System.Drawing.Color.SaddleBrown;
@@ -1461,12 +1445,86 @@
             this.panel86.TabIndex = 114;
             this.panel86.Tag = "enemy";
             // 
+            // btnReset
+            // 
+            this.btnReset.BackColor = System.Drawing.Color.Transparent;
+            this.btnReset.BackgroundImage = global::LapTrinhTrucQuangProjectTest.Properties.Resources.RSGame;
+            this.btnReset.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnReset.FlatAppearance.BorderSize = 0;
+            this.btnReset.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.btnReset.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+            this.btnReset.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnReset.Location = new System.Drawing.Point(430, 270);
+            this.btnReset.Name = "btnReset";
+            this.btnReset.Size = new System.Drawing.Size(200, 50);
+            this.btnReset.TabIndex = 117;
+            this.btnReset.TabStop = false;
+            this.btnReset.UseVisualStyleBackColor = false;
+            this.btnReset.Visible = false;
+            this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
+            // 
+            // btnContinue
+            // 
+            this.btnContinue.BackColor = System.Drawing.Color.Transparent;
+            this.btnContinue.BackgroundImage = global::LapTrinhTrucQuangProjectTest.Properties.Resources.Continue;
+            this.btnContinue.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnContinue.FlatAppearance.BorderSize = 0;
+            this.btnContinue.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.btnContinue.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+            this.btnContinue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnContinue.Location = new System.Drawing.Point(430, 170);
+            this.btnContinue.Name = "btnContinue";
+            this.btnContinue.Size = new System.Drawing.Size(200, 50);
+            this.btnContinue.TabIndex = 116;
+            this.btnContinue.TabStop = false;
+            this.btnContinue.UseVisualStyleBackColor = false;
+            this.btnContinue.Visible = false;
+            this.btnContinue.Click += new System.EventHandler(this.btnContinue_Click);
+            // 
+            // btnHome
+            // 
+            this.btnHome.BackColor = System.Drawing.Color.Transparent;
+            this.btnHome.BackgroundImage = global::LapTrinhTrucQuangProjectTest.Properties.Resources.Home;
+            this.btnHome.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnHome.FlatAppearance.BorderSize = 0;
+            this.btnHome.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.btnHome.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+            this.btnHome.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnHome.Location = new System.Drawing.Point(1010, 5);
+            this.btnHome.Name = "btnHome";
+            this.btnHome.Size = new System.Drawing.Size(50, 50);
+            this.btnHome.TabIndex = 115;
+            this.btnHome.TabStop = false;
+            this.btnHome.UseVisualStyleBackColor = false;
+            this.btnHome.Click += new System.EventHandler(this.btnHome_Click);
+            // 
+            // btnMenu
+            // 
+            this.btnMenu.BackColor = System.Drawing.Color.Transparent;
+            this.btnMenu.BackgroundImage = global::LapTrinhTrucQuangProjectTest.Properties.Resources.MN;
+            this.btnMenu.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnMenu.FlatAppearance.BorderSize = 0;
+            this.btnMenu.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.btnMenu.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+            this.btnMenu.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnMenu.Location = new System.Drawing.Point(950, 5);
+            this.btnMenu.Name = "btnMenu";
+            this.btnMenu.Size = new System.Drawing.Size(50, 50);
+            this.btnMenu.TabIndex = 0;
+            this.btnMenu.TabStop = false;
+            this.btnMenu.UseVisualStyleBackColor = false;
+            this.btnMenu.Click += new System.EventHandler(this.btnMenu_Click);
+            // 
             // MapLevel1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.Controls.Add(this.btnReset);
+            this.Controls.Add(this.btnContinue);
+            this.Controls.Add(this.btnHome);
+            this.Controls.Add(this.btnMenu);
             this.Controls.Add(this.panel111);
             this.Controls.Add(this.panel15);
             this.Controls.Add(this.panel14);
@@ -1503,8 +1561,6 @@
             this.Controls.Add(this.panel121);
             this.Controls.Add(this.panel125);
             this.Controls.Add(this.panel120);
-            this.Controls.Add(this.panel119);
-            this.Controls.Add(this.panel118);
             this.Controls.Add(this.panel45);
             this.Controls.Add(this.panel44);
             this.Controls.Add(this.panel43);
@@ -1732,8 +1788,6 @@
         private System.Windows.Forms.Panel panel114;
         private System.Windows.Forms.Panel panel116;
         private System.Windows.Forms.Panel panel117;
-        private System.Windows.Forms.Panel panel118;
-        private System.Windows.Forms.Panel panel119;
         private System.Windows.Forms.Panel panel120;
         private System.Windows.Forms.Panel panel121;
         private System.Windows.Forms.Panel panel122;
@@ -1764,5 +1818,9 @@
         private System.Windows.Forms.Panel panel147;
         private System.Windows.Forms.Panel panel149;
         private System.Windows.Forms.Panel panel86;
+        private System.Windows.Forms.Button btnMenu;
+        private System.Windows.Forms.Button btnHome;
+        private System.Windows.Forms.Button btnContinue;
+        private System.Windows.Forms.Button btnReset;
     }
 }

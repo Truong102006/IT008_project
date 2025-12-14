@@ -26,6 +26,18 @@ namespace LapTrinhTrucQuangProjectTest
         bool isCollected = false;
         int startX;
         int startY;
+
+        private Size _originalFormSize;
+        private Rectangle _orgMenuRect;
+        private float _orgMenuFontSize;
+        private Rectangle _orgHomeRect;
+        private float _orgHomeFontSize;
+        private Rectangle _orgContinueRect;
+        private float _orgContinueFontSize;
+        private Rectangle _orgResetRect;
+        private float _orgResetFontSize;
+        private bool isPaused = false;
+
         Rectangle player, door;
         List<Rectangle> platforms = new List<Rectangle>();
         List<Rectangle> coin1 = new List<Rectangle>();
@@ -242,6 +254,31 @@ namespace LapTrinhTrucQuangProjectTest
 
             DoubleBuffered = true;
             // XÓA: Text = ... (UserControl không có thanh tiêu đề)
+            _originalFormSize = this.ClientSize;
+
+            if (btnMenu != null)
+            {
+                _orgMenuRect = btnMenu.Bounds;
+                _orgMenuFontSize = btnMenu.Font.Size;
+            }
+
+            if (btnHome != null)
+            {
+                _orgHomeRect = btnHome.Bounds;
+                _orgHomeFontSize = btnHome.Font.Size;
+            }
+
+            if (btnContinue != null)
+            {
+                _orgContinueRect = btnContinue.Bounds;
+                _orgContinueFontSize = btnContinue.Font.Size;
+            }
+
+            if (btnReset != null)
+            {
+                _orgResetRect = btnReset.Bounds;
+                _orgResetFontSize = btnReset.Font.Size;
+            }
 
             runAnim.DrawOffsetX = 8;
             idleAnim.DrawOffsetX = 8;
@@ -461,7 +498,113 @@ namespace LapTrinhTrucQuangProjectTest
         private void MapLevel1_Resize(object sender, EventArgs e)
         {
             UpdateScale();
+            float xRatio = (float)this.ClientSize.Width / _originalFormSize.Width;
+            float yRatio = (float)this.ClientSize.Height / _originalFormSize.Height;
+            UpdateControlSize(btnMenu, _orgMenuRect, _orgMenuFontSize, xRatio, yRatio);
+            UpdateControlSize(btnHome, _orgHomeRect, _orgHomeFontSize, xRatio, yRatio);
+            UpdateControlSize(btnContinue, _orgContinueRect, _orgContinueFontSize, xRatio, yRatio);
+            UpdateControlSize(btnReset, _orgResetRect, _orgResetFontSize, xRatio, yRatio);
         }
+        private void UpdateControlSize(Button btn, Rectangle originalRect, float originalFontSize, float xRatio, float yRatio)
+        {
+            if (btn == null) return;
+
+            // Tính vị trí và kích thước mới dựa trên tỷ lệ
+            int newX = (int)(originalRect.X * xRatio);
+            int newY = (int)(originalRect.Y * yRatio);
+            int newWidth = (int)(originalRect.Width * xRatio);
+            int newHeight = (int)(originalRect.Height * yRatio);
+
+            // Áp dụng vào nút
+            btn.Bounds = new Rectangle(newX, newY, newWidth, newHeight);
+        }
+        private void btnMenu_Click(object sender, EventArgs e)
+        {
+            if (isGameOver) return;
+
+            // 1. Dừng game
+            isPaused = true;
+            gameTimer.Stop();
+
+            // 2. Hiện nút Continue và Reset
+            if (btnContinue != null)
+            {
+                btnContinue.Visible = true;
+                btnContinue.BringToFront(); // Đảm bảo nút nổi lên trên cùng
+            }
+            if (btnReset != null)
+            {
+                btnReset.Visible = true;
+                btnReset.BringToFront();
+            }
+
+            // 3. Vẽ lại màn hình (để hiện lớp đen mờ ở bước sau)
+            this.Invalidate();
+        }
+        private void btnHome_Click(object sender, EventArgs e)
+        {
+            // 1. Dừng game ngay lập tức để tránh lỗi chạy ngầm
+            gameTimer.Stop();
+
+            // 2. Tìm Form cha và gọi hàm quay về
+            var mainForm = this.TopLevelControl as LapTrinhTrucQuangProjectTest.MainMenuForm;
+
+            if (mainForm != null)
+            {
+                mainForm.ReturnToMainMenu();
+            }
+        }
+        private void btnContinue_Click(object sender, EventArgs e)
+        {
+            // 1. Ẩn nút và bỏ trạng thái Pause
+            isPaused = false;
+            if (btnContinue != null) btnContinue.Visible = false;
+            if (btnReset != null) btnReset.Visible = false;
+
+            // 2. Trả lại tiêu điểm cho UserControl để nhận phím di chuyển
+            this.Focus();
+
+            // 3. Chạy lại game
+            gameTimer.Start();
+            this.Invalidate();
+        }
+
+        private void btnReset_Click(object sender, EventArgs e)
+        {
+            // 1. Ẩn nút và bỏ trạng thái Pause
+            isPaused = false;
+            if (btnContinue != null) btnContinue.Visible = false;
+            if (btnReset != null) btnReset.Visible = false;
+
+            // 2. Reset máu
+            currentHealth = maxHealth;
+
+            // 3. Load lại màn chơi hiện tại
+            // (Hàm này sẽ xóa hết quái/vàng cũ và tạo lại mới)
+            switch (currentLevel)
+            {
+                case 1: CreateLevel1(); break;
+                case 2: CreateLevel2(); break;
+                case 3: CreateLevel3(); break;
+                case 4: CreateLevel4(); break;
+                case 5: CreateLevel5(); break;
+                case 6: CreateLevel6(); break;
+                default: CreateLevel1(); break;
+            }
+
+            // 4. Reset nhân vật
+            jumping = false;
+            onGround = false;
+            jumpSpeed = 0;
+            goLeft = false; goRight = false;
+            isGameOver = false;
+
+            // 5. Bắt đầu lại
+            this.Focus();
+            gameTimer.Start();
+            this.Invalidate();
+        }
+
 
         private Rectangle GetCollRect(Rectangle r, bool faceRight)
         {
@@ -804,7 +947,7 @@ namespace LapTrinhTrucQuangProjectTest
             if (coll.IntersectsWith(door) && !levelTransitioning)
             {
                 levelTransitioning = true;
-                NextLevel();
+                NextLevel(); 
                 goLeft = false;
                 goRight = false;
                 jumping = false;
@@ -1249,6 +1392,17 @@ namespace LapTrinhTrucQuangProjectTest
                 e.Graphics.DrawString(scoreText, scoreFont, Brushes.Black, scoreX + 2, scoreY + 2);
                 e.Graphics.DrawString(scoreText, scoreFont, Brushes.Gold, scoreX, scoreY);
             }
+
+            // === VẼ MÀN HÌNH PAUSE ===
+            if (isPaused)
+            {
+                // Phủ lớp đen mờ
+                using (SolidBrush brush = new SolidBrush(Color.FromArgb(200, 0, 0, 0)))
+                {
+                    e.Graphics.FillRectangle(brush, 0, 0, baseWidth, baseHeight);
+                }
+            }
+            // ======================================================
 
             // ===== VẼ MÀN HÌNH GAME OVER =====
             if (isGameOver)
