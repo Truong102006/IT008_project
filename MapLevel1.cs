@@ -14,6 +14,7 @@ namespace LapTrinhTrucQuangProjectTest
         // ===== GAME VARIABLES (KHÔNG THAY ĐỔI) =====
         Bitmap platformImg;
         Bitmap backgroundImg; // biến chứa ảnh nền (GIF hoặc PNG đều được)
+        Bitmap portal;
         Bitmap gameOverImg;
         bool goLeft, goRight, jumping, onGround, levelTransitioning;
         int jumpSpeed = 0, force = 20, gravity = 8, playerSpeed = 3, currentLevel = 1;
@@ -25,14 +26,11 @@ namespace LapTrinhTrucQuangProjectTest
         bool isCollected = false;
         int startX;
         int startY;
-        private Size _originalFormSize;
-        private Rectangle _orgMenuRect;
-        private float _orgMenuFontSize;
         Rectangle player, door;
         List<Rectangle> platforms = new List<Rectangle>();
         List<Rectangle> coin1 = new List<Rectangle>();
-        List<Rectangle> coin2 = new List<Rectangle>(); 
-        List<Rectangle> trap = new List<Rectangle>();
+        List<Rectangle> coin2 = new List<Rectangle>();
+        List<Rectangle> coin3 = new List<Rectangle>();
         List<Tile> tiles = new List<Tile>();
         List<Enemy> enemies = new List<Enemy>();
         Dictionary<string, Bitmap> tileAssets = new Dictionary<string, Bitmap>();
@@ -196,9 +194,13 @@ namespace LapTrinhTrucQuangProjectTest
         private readonly string DoorPath = @"Images\flag.png";
         private readonly string CoinPath1 = @"Images\coin_1.png";
         private readonly string CoinPath2 = @"Images\coin_2.png";
+        private readonly string CoinPath3 = @"Images\coin_3.png";
+        private readonly string DecoPath1 = @"Images\deco_arrow.png";
+        private readonly string DecoPath2 = @"Images\deco_7.png";
         private readonly string EnemyPath = @"Images\enemy.png";
         private readonly string BossPath = @"Images\boss.png";
-        private readonly string TrapPath = @"Images\trap_3.png";
+        private readonly string TrapPath1 = @"Images\trap_3.png";
+        private readonly string TrapPath2 = @"Images\trap_4.png";
 
         SpriteAnim runAnim = new SpriteAnim { FPS = 10, Loop = true };
         SpriteAnim jumpAnim = new SpriteAnim { FPS = 10, Loop = true };
@@ -206,9 +208,13 @@ namespace LapTrinhTrucQuangProjectTest
         SpriteAnim doorAnim = new SpriteAnim { FPS = 10, Loop = true };
         SpriteAnim coinAnim1 = new SpriteAnim { FPS = 9, Loop = true };
         SpriteAnim coinAnim2 = new SpriteAnim { FPS = 9, Loop = true };
+        SpriteAnim coinAnim3 = new SpriteAnim { FPS = 9, Loop = true };
+        SpriteAnim decoAnim1 = new SpriteAnim { FPS = 10, Loop = true };
+        SpriteAnim decoAnim2 = new SpriteAnim { FPS = 10, Loop = true };
         SpriteAnim enemyAnim = new SpriteAnim { FPS = 8, Loop = true };
-        SpriteAnim bossAnim = new SpriteAnim { FPS = 6, Loop = true };
-        SpriteAnim trapAnim = new SpriteAnim { FPS = 20, Loop = true };
+        SpriteAnim bossAnim = new SpriteAnim { FPS = 7, Loop = true };
+        SpriteAnim trapAnim1 = new SpriteAnim { FPS = 20, Loop = true };
+        SpriteAnim trapAnim2 = new SpriteAnim { FPS = 6, Loop = true };
 
         AnimState currentState = AnimState.Idle;
         SpriteAnim currentAnim;
@@ -219,13 +225,11 @@ namespace LapTrinhTrucQuangProjectTest
         public MapLevel1()
         {
             InitializeComponent();
-            
             CreateLevel1();
             // Gắn sự kiện Load vào hàm khởi tạo game
             this.Load += MapLevel1_Load;
             // Gắn sự kiện Resize của UserControl
             this.Resize += MapLevel1_Resize;
-           
         }
 
         // THAY ĐỔI TÊN HÀM: Form1_Load -> MapLevel1_Load
@@ -235,17 +239,9 @@ namespace LapTrinhTrucQuangProjectTest
             // THAY THẾ: this.Deactivate -> this.LostFocus
             // Ghi chú: Cần set TabStop=true cho UserControl để nó nhận được focus
             this.LostFocus += (s, e2) => { goLeft = false; goRight = false; };
-            
+
             DoubleBuffered = true;
             // XÓA: Text = ... (UserControl không có thanh tiêu đề)
-            _originalFormSize = this.ClientSize;
-
-            // Lưu thông số nút New Game
-            if (btnMenu != null)
-            {
-                _orgMenuRect = btnMenu.Bounds;
-                _orgMenuFontSize = btnMenu.Font.Size;
-            }
 
             runAnim.DrawOffsetX = 8;
             idleAnim.DrawOffsetX = 8;
@@ -256,12 +252,16 @@ namespace LapTrinhTrucQuangProjectTest
             LoadAnimationEven(RunPath, runAnim, 6, alphaThreshold: 16, tightenEdges: false);
             LoadAnimationEven(JumpPath, jumpAnim, 4, alphaThreshold: 16, tightenEdges: false);
             LoadAnimationEven(IdlePath, idleAnim, 4, alphaThreshold: 16, tightenEdges: false);
-            LoadAnimationEven(DoorPath, doorAnim, 7, alphaThreshold: 0, tightenEdges: true);
-            LoadAnimationEven(CoinPath1, coinAnim1, 7, alphaThreshold: 0, tightenEdges: true);
-            LoadAnimationEven(CoinPath2, coinAnim2, 7, alphaThreshold: 0, tightenEdges: true);
-            LoadAnimationEven(EnemyPath, enemyAnim, 6, alphaThreshold: 16, tightenEdges: true);
-            LoadAnimationEven(BossPath, bossAnim, 8, alphaThreshold: 16, tightenEdges: true);
-            LoadAnimationEven(TrapPath, trapAnim, 8, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(DoorPath, doorAnim, 7, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(CoinPath1, coinAnim1, 7, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(CoinPath2, coinAnim2, 7, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(CoinPath3, coinAnim3, 7, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(DecoPath1, decoAnim1, 7, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(DecoPath2, decoAnim2, 13, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(EnemyPath, enemyAnim, 12, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(BossPath, bossAnim, 6, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(TrapPath1, trapAnim1, 8, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(TrapPath2, trapAnim2, 4, alphaThreshold: 16, tightenEdges: true);
 
             currentAnim = idleAnim; currentAnim.Reset();
             gameTimer.Interval = 16;
@@ -278,55 +278,39 @@ namespace LapTrinhTrucQuangProjectTest
             UpdateScale();
             // XÓA: this.Shown += ... (Chỉ Form có)
             // this.Shown += (s, _) => UpdateScale();
-
-            AddTileImage("tile_1", "tile_1.png");
-            AddTileImage("tile_2", "tile_2.png");
-            AddTileImage("tile_3", "tile_3.png");
-            AddTileImage("tile_4", "tile_4.png");
-            AddTileImage("tile_5", "tile_5.png");
-            AddTileImage("tile_6", "tile_6.png");
-            AddTileImage("tile_7", "tile_7.png");
-            AddTileImage("tile_8", "tile_8.png");
-            AddTileImage("tile_9", "tile_9.png");
-            AddTileImage("tile_10", "tile_10.png");
-            AddTileImage("tile_11", "tile_11.png");
-            AddTileImage("tile_12", "tile_12.png");
-            AddTileImage("tile_13", "tile_13.png");
-            AddTileImage("tile_14", "tile_14.png");
-            AddTileImage("tile_15", "tile_15.png");
-            AddTileImage("tile_16", "tile_16.png");
-            AddTileImage("tile_17", "tile_17.png");
-            AddTileImage("tile_18", "tile_18.png");
-            AddTileImage("tile_19", "tile_19.png");
-            AddTileImage("tile_20", "tile_20.png");
-            AddTileImage("tile_21", "tile_21.png");
-            AddTileImage("tile_22", "tile_22.png");
-            AddTileImage("tile_23", "tile_23.png");
-            AddTileImage("tile_24", "tile_24.png");
-            AddTileImage("tile_25", "tile_25.png");
-            AddTileImage("tile_26", "tile_26.png");
-            AddTileImage("tile_27", "tile_27.png");
-            AddTileImage("tile_28", "tile_28.png");
-            AddTileImage("tile_29", "tile_29.png");
-            AddTileImage("tile_30", "tile_30.png");
-            AddTileImage("tile_31", "tile_31.png");
-            AddTileImage("tile_32", "tile_32.png");
-            AddTileImage("tile_33", "tile_33.png");
+            for (int i = 1; i <= 60; i++)
+            {
+                AddTileImage("tile_" + i, "tile_" + i + ".png");
+            }
+            for (int i = 1; i <= 17; i++)
+            {
+                if (i != 7)
+                {
+                    AddTileImage("deco_" + i, "deco_" + i + ".png");
+                }
+            }
+            for (int i = 1; i <= 4; i++)
+            {
+                AddTileImage("deco_bui" + i, "deco_bui" + i + ".png");
+            }
+            for (int i = 1; i <= 3; i++)
+            {
+                AddTileImage("deco_cay" + i, "deco_cay" + i + ".png");
+            }
+            for (int i = 1; i <= 2; i++)
+            {
+                AddTileImage("deco_da" + i, "deco_da" + i + ".png");
+            }
+            for (int i = 1; i <= 9; i++)
+            {
+                AddTileImage("deco_arm" + i, "deco_arm" + i + ".png");
+            }
             AddTileImage("tile_invisible", "tile_invisible.png");
-            AddTileImage("deco_bui1", "deco_bui1.png");
-            AddTileImage("deco_bui2", "deco_bui2.png");
-            AddTileImage("deco_bui3", "deco_bui3.png");
-            AddTileImage("deco_bui4", "deco_bui4.png");
             AddTileImage("deco_bui5.1", "deco_bui5.1.png");
             AddTileImage("deco_bui5.2", "deco_bui5.2.png");
-            AddTileImage("deco_bui5.3", "deco_bui5.3.png");
-            AddTileImage("deco_cay1", "deco_cay1.png");
-            AddTileImage("deco_cay2", "deco_cay2.png");
-            AddTileImage("deco_cay3", "deco_cay3.png");
-            AddTileImage("deco_da1", "deco_da1.png");
-            AddTileImage("deco_da2", "deco_da2.png");
+            AddTileImage("deco_bui5.3", "deco_bui5.3.png");                  
             AddTileImage("trap_1", "trap_1.png");
-            AddTileImage("water_2", "water4-resized.gif");
+            AddTileImage("water_2", "water4.gif");
             AddTileImage("water_3", "water4-rotated.gif");
             try
             {
@@ -336,6 +320,7 @@ namespace LapTrinhTrucQuangProjectTest
                     gameOverImg = (Bitmap)Image.FromFile(@"Images\GameOverFont_2.png");
             }
             catch { }
+            LoadPortal(@"Images\portal.gif");
         }
         // ===== LOAD HELPERS (KHÔNG THAY ĐỔI) =====
 
@@ -439,6 +424,29 @@ namespace LapTrinhTrucQuangProjectTest
             }
             catch { }
         }
+        private void LoadPortal(string path)
+        {
+            try
+            {
+                if (portal != null)
+                {
+                    ImageAnimator.StopAnimate(portal, (s, e) => { });
+                    portal.Dispose();
+                    portal = null;
+                }
+
+                if (File.Exists(path))
+                {
+                    portal = (Bitmap)Image.FromFile(path);
+
+                    if (ImageAnimator.CanAnimate(portal))
+                    {
+                        ImageAnimator.Animate(portal, (s, e) => { });
+                    }
+                }
+            }
+            catch { }
+        }
         // ===== WINDOW & GAME LOOP (ĐÃ SỬA ĐỔI) =====
         private void UpdateScale()
         {
@@ -453,48 +461,6 @@ namespace LapTrinhTrucQuangProjectTest
         private void MapLevel1_Resize(object sender, EventArgs e)
         {
             UpdateScale();
-            float xRatio = (float)this.ClientSize.Width / _originalFormSize.Width;
-            float yRatio = (float)this.ClientSize.Height / _originalFormSize.Height;
-            UpdateControlSize(btnMenu, _orgMenuRect, _orgMenuFontSize, xRatio, yRatio);
-        }
-        private void UpdateControlSize(Button btn, Rectangle originalRect, float originalFontSize, float xRatio, float yRatio)
-        {
-            if (btn == null) return;
-
-            // Tính vị trí và kích thước mới dựa trên tỷ lệ
-            int newX = (int)(originalRect.X * xRatio);
-            int newY = (int)(originalRect.Y * yRatio);
-            int newWidth = (int)(originalRect.Width * xRatio);
-            int newHeight = (int)(originalRect.Height * yRatio);
-
-            // Áp dụng vào nút
-            btn.Bounds = new Rectangle(newX, newY, newWidth, newHeight);
-        }
-        private void btnMenu_Click(object sender, EventArgs e)
-        {
-            // Dừng game khi bấm menu
-            if (gameTimer != null) gameTimer.Stop();
-
-            // Hiện hộp thoại hỏi
-            DialogResult result = MessageBox.Show("Bạn muốn về màn hình chính?", "Menu", MessageBoxButtons.YesNo);
-
-            if (result == DialogResult.Yes)
-            {
-                // ... code chuyển form ...
-                MainMenuForm menu = new MainMenuForm();
-                menu.Show();
-                // Tìm Form cha để đóng (vì đây là UserControl)
-                this.ParentForm.Close();
-            }
-            else
-            {
-                // Nếu chọn "NO" (Chơi tiếp)
-                if (gameTimer != null) gameTimer.Start();
-
-                // --- QUAN TRỌNG NHẤT: TRẢ LẠI QUYỀN ĐIỀU KHIỂN ---
-                this.Focus();
-                // --------------------------------------------------
-            }
         }
 
         private Rectangle GetCollRect(Rectangle r, bool faceRight)
@@ -626,7 +592,7 @@ namespace LapTrinhTrucQuangProjectTest
 
             foreach (var t in tiles)
             {
-                if (t.Type.StartsWith("water_"))
+                if (t.Type.StartsWith("water_") || t.Type.StartsWith("deco_arm"))
                 {
                     if (playerHitbox.IntersectsWith(t.Rect))
                     {
@@ -639,12 +605,12 @@ namespace LapTrinhTrucQuangProjectTest
                     {
                         if (!hitTrap)
                         {
-                            currentHealth -= 25;
+                            currentHealth -= 10;
                             hitTrap = true;
                         }
                         jumping = true;
                         onGround = false;
-                        jumpSpeed = 25;
+                        jumpSpeed = 20;
 
                         if (currentHealth <= 0)
                         {
@@ -864,6 +830,15 @@ namespace LapTrinhTrucQuangProjectTest
                     coin2.RemoveAt(i);
                 }
             }
+            for (int i = coin3.Count - 1; i >= 0; i--)
+            {
+                if (coll.IntersectsWith(coin3[i]) && isCollected == false)
+                {
+                    isCollected = true;
+                    score += 10;
+                    coin3.RemoveAt(i);
+                }
+            }
             // === Chọn state theo DI CHUYỂN THỰC TẾ ===
 
             bool inAir = jumping || !onGround;
@@ -877,7 +852,11 @@ namespace LapTrinhTrucQuangProjectTest
             doorAnim.Update(dt);
             coinAnim1.Update(dt);
             coinAnim2.Update(dt);
-            trapAnim.Update(dt);
+            coinAnim3.Update(dt);
+            decoAnim1.Update(dt);
+            decoAnim2.Update(dt);
+            trapAnim1.Update(dt);
+            trapAnim2.Update(dt);
             enemyAnim.Update(dt);
             bossAnim.Update(dt);
 
@@ -993,7 +972,7 @@ namespace LapTrinhTrucQuangProjectTest
             enemies.Clear();
             coin1.Clear();
             coin2.Clear();
-
+            coin3.Clear(); 
             // SỬ DỤNG container.Controls
             foreach (Control c in container.Controls)
             {
@@ -1022,6 +1001,11 @@ namespace LapTrinhTrucQuangProjectTest
                 if (tag != null && tag.StartsWith("coin_2"))
                 {
                     coin2.Add(new Rectangle(c.Left, c.Top, c.Width, c.Height));
+                    c.Visible = false;
+                }
+                if (tag != null && tag.StartsWith("coin_3"))
+                {
+                    coin3.Add(new Rectangle(c.Left, c.Top, c.Width, c.Height));
                     c.Visible = false;
                 }
                 if (tag == "player")
@@ -1061,6 +1045,7 @@ namespace LapTrinhTrucQuangProjectTest
             // Các class MapLevelX (ví dụ MapLevel2) phải được chuyển thành UserControl
             MapLevel2 map = new MapLevel2();
             LoadMapFromContainer(map);
+            LoadBackground(@"Images\background3.gif");
             map.Dispose();
         }
         private void CreateLevel3()
@@ -1088,12 +1073,13 @@ namespace LapTrinhTrucQuangProjectTest
             LoadMapFromContainer(map);
             map.Dispose();
         }
-        // ===== DRAW (KHÔNG THAY ĐỔI) =====
+        // ===== DRAW =====
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
             e.Graphics.ScaleTransform(scaleX, scaleY);
 
+            // vẽ background:
             if (backgroundImg != null)
             {
                 ImageAnimator.UpdateFrames(backgroundImg);
@@ -1103,6 +1089,22 @@ namespace LapTrinhTrucQuangProjectTest
             {
                 e.Graphics.Clear(Color.LightGray);
             }
+
+            // vẽ cổng qua màn:
+            if (portal != null)
+            {
+                // Cập nhật khung hình tiếp theo cho GIF (để nó chuyển động)
+                ImageAnimator.UpdateFrames(portal);
+
+                // Vẽ Portal vào vị trí của Door
+                e.Graphics.DrawImage(portal, door);
+            }
+            else
+            {
+                // Vẽ dự phòng nếu ảnh bị lỗi hoặc chưa load xong
+                e.Graphics.FillRectangle(Brushes.Gold, door);
+            }
+
             e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
             e.Graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
 
@@ -1118,20 +1120,13 @@ namespace LapTrinhTrucQuangProjectTest
                 }
             }
 
-            foreach (var t in tiles)
-            {
-                if (t.Type == "trap_3")
-                {
-                    if (trapAnim.Sheet != null)
-                    {
-                        trapAnim.Draw(e.Graphics, t.Rect, false);
-                    }
-                    else
-                    {
-                        e.Graphics.FillRectangle(Brushes.Red, t.Rect); 
-                    }
-                    continue;
-                }
+            foreach (var t in tiles) 
+            {               
+                if (t.Type == "trap_3") { trapAnim1.Draw(e.Graphics, t.Rect, false); continue; }
+                if (t.Type == "trap_4") { trapAnim2.Draw(e.Graphics, t.Rect, false); continue; }
+                if (t.Type == "deco_arrow") { decoAnim1.Draw(e.Graphics, t.Rect, false); continue; }
+                if (t.Type == "deco_7") { decoAnim2.Draw(e.Graphics, t.Rect, false); continue; }
+
                 if (tileAssets.ContainsKey(t.Type) && tileAssets[t.Type] != null)
                 {
                     Bitmap img = tileAssets[t.Type];
@@ -1150,16 +1145,7 @@ namespace LapTrinhTrucQuangProjectTest
             if (currentAnim != null && currentAnim.Sheet != null && currentAnim.Frames.Count > 0)
                 currentAnim.Draw(e.Graphics, player, facingRight);
             else
-                e.Graphics.FillRectangle(Brushes.Red, player);
-
-            if (doorAnim.Sheet != null)
-            {
-                doorAnim.Draw(e.Graphics, door, true);
-            }
-            else
-            {
-                e.Graphics.FillRectangle(Brushes.Gold, door);
-            }
+                e.Graphics.FillRectangle(Brushes.Red, player);            
 
             foreach (var c in coin1)
             {
@@ -1183,11 +1169,11 @@ namespace LapTrinhTrucQuangProjectTest
                     e.Graphics.FillRectangle(Brushes.Gold, c);
                 }
             }
-            foreach (var c in trap)
+            foreach (var c in coin3)
             {
-                if (trapAnim.Sheet != null)
+                if (coinAnim3.Sheet != null)
                 {
-                    trapAnim.Draw(e.Graphics, c, true);
+                    coinAnim3.Draw(e.Graphics, c, true);
                 }
                 else
                 {
@@ -1204,7 +1190,7 @@ namespace LapTrinhTrucQuangProjectTest
                 }
                 else if (!en.IsBoss && enemyAnim.Sheet != null)
                 {
-                    enemyAnim.Draw(e.Graphics, en.Rect, en.FacingRight);
+                    enemyAnim.Draw(e.Graphics, en.Rect, !en.FacingRight);
                 }
                 else
                 {
@@ -1235,15 +1221,15 @@ namespace LapTrinhTrucQuangProjectTest
 
             // ===== VẼ GIAO DIỆN (UI) - THANH MÁU =====
             int barX = 50;
-            int barY = 10;
-            int barW = 200;
-            int barH = 20;
+            int barY = 20;
+            int barW = 130;
+            int barH = 13;
 
             string hp = "HP";
-            using (Font hpFont = new Font("Arial", 14, FontStyle.Bold))
+            using (Font hpFont = new Font("Arial", 12, FontStyle.Bold))
             {
-                e.Graphics.DrawString(hp, hpFont, Brushes.Black, barX - 40 + 2, barY + 2);
-                e.Graphics.DrawString(hp, hpFont, Brushes.Red, barX - 40, barY);
+                e.Graphics.DrawString(hp, hpFont, Brushes.Black, barX - 40, barY);
+                e.Graphics.DrawString(hp, hpFont, Brushes.Red, barX - 42, barY - 2);
             }
 
             float percentage = (float)currentHealth / maxHealth;
@@ -1252,12 +1238,7 @@ namespace LapTrinhTrucQuangProjectTest
 
             e.Graphics.FillRectangle(Brushes.Gray, barX, barY, barW, barH);
             e.Graphics.FillRectangle(Brushes.Red, barX, barY, fillW, barH);
-
-            using (Pen borderPen = new Pen(Color.White, 2))
-            {
-                e.Graphics.DrawRectangle(borderPen, barX, barY, barW, barH);
-            }
-
+   
             string scoreText = "SCORE: " + score.ToString();
 
             using (Font scoreFont = new Font("Arial", 14, FontStyle.Bold))

@@ -7,24 +7,12 @@ namespace LapTrinhTrucQuangProjectTest
 {
     public partial class MainMenuForm : Form
     {
-        // Biến cho hình nền và Panel chứa game
         private Bitmap _backgroundImage;
         private Panel contentPanel;
-
-        // --- CÁC BIẾN LƯU TRỮ TRẠNG THÁI GỐC ĐỂ TÍNH TỶ LỆ ---
-        private Size _originalFormSize;
-
-        // 1. Nút New Game
-        private Rectangle _orgNewGameRect;
-        private float _orgNewGameFontSize;
-
-        // 2. Nút Settings (Cài đặt)
-        private Rectangle _orgSettingsRect;
-        private float _orgSettingsFontSize;
-
-        // 3. Nút Exit (Thoát)
-        private Rectangle _orgExitRect;
-        private float _orgExitFontSize;
+        // các biến dùng cho bật full màn hình:
+        private bool isFullscreen = false;
+        private FormBorderStyle oldStyle = FormBorderStyle.Sizable;
+        private FormWindowState oldState = FormWindowState.Normal;
 
         public MainMenuForm()
         {
@@ -32,31 +20,29 @@ namespace LapTrinhTrucQuangProjectTest
             this.Text = "Mini Parkour Game";
             this.KeyPreview = true;
 
-            // Kích hoạt DoubleBuffered để giảm giật hình khi resize
+            // 1. Kích hoạt DoubleBuffered để giảm giật cho toàn Form
             this.DoubleBuffered = true;
 
-            // Tạo Panel chứa Game (ban đầu ẩn)
+            // 2. Tạo Panel chứa Game
             contentPanel = new Panel
             {
                 Dock = DockStyle.Fill,
+                // QUAN TRỌNG: Không dùng Transparent nữa, dùng màu mặc định
                 BackColor = Color.Transparent,
+                // QUAN TRỌNG NHẤT: Ẩn nó đi ngay từ đầu
                 Visible = false
             };
+
             this.Controls.Add(contentPanel);
 
-            // Gán các sự kiện chính của Form
+            // Các sự kiện
             this.Load += MainMenuForm_Load;
             this.Disposed += MainMenuForm_Disposed;
             this.Resize += MainMenuForm_Resize;
-
-            // Gán sự kiện Click cho các nút (nếu chưa gán trong Designer)
-            // Lưu ý: Code này phòng trường hợp bạn quên gán sự kiện trong bảng Properties
-            if (btnNewGame != null) btnNewGame.Click += btnNewGame_Click;
         }
 
         private void MainMenuForm_Load(object sender, EventArgs e)
         {
-            // Tải hình nền
             try
             {
                 string imagePath = @"Images\background_menu.png";
@@ -67,136 +53,76 @@ namespace LapTrinhTrucQuangProjectTest
             }
             catch { }
 
-            // --- LƯU LẠI KÍCH THƯỚC GỐC LÀM CHUẨN (MỐC 1) ---
-            _originalFormSize = this.ClientSize;
-
-            // Lưu thông số nút New Game
-            if (btnNewGame != null)
-            {
-                _orgNewGameRect = btnNewGame.Bounds;
-                _orgNewGameFontSize = btnNewGame.Font.Size;
-            }
-
-            // Lưu thông số nút Settings
-            if (btnOptions != null)
-            {
-                _orgSettingsRect = btnOptions.Bounds;
-                _orgSettingsFontSize = btnOptions.Font.Size;
-            }
-
-            // Lưu thông số nút Exit
-            if (btnExit != null)
-            {
-                _orgExitRect = btnExit.Bounds;
-                _orgExitFontSize = btnExit.Font.Size;
-            }
-
-            // Xóa bỏ sự kiện thừa do Designer sinh ra (nếu có)
+            // Xóa sự kiện dư thừa
             this.Load -= MainMenuForm_Load_1;
         }
-
-        // --- SỰ KIỆN RESIZE: TÍNH TOÁN VÀ CO GIÃN NÚT ---
-        private void MainMenuForm_Resize(object sender, EventArgs e)
+        private void ToggleFullscreen()
         {
-            this.Invalidate(); // Vẽ lại hình nền ngay lập tức
+            isFullscreen = !isFullscreen;
 
-            // Nếu form chưa load xong hoặc bị thu nhỏ xuống taskbar thì không làm gì
-            if (_originalFormSize.Width == 0 || _originalFormSize.Height == 0) return;
+            if (isFullscreen)
+            {
+                // Lưu trạng thái cũ để lát quay lại
+                oldStyle = this.FormBorderStyle;
+                oldState = this.WindowState;
 
-            // 1. Tính tỷ lệ thay đổi so với kích thước gốc
-            float xRatio = (float)this.ClientSize.Width / _originalFormSize.Width;
-            float yRatio = (float)this.ClientSize.Height / _originalFormSize.Height;
-
-            // 2. Cập nhật kích thước cho từng nút
-            UpdateControlSize(btnNewGame, _orgNewGameRect, _orgNewGameFontSize, xRatio, yRatio);
-            UpdateControlSize(btnOptions, _orgSettingsRect, _orgSettingsFontSize, xRatio, yRatio);
-            UpdateControlSize(btnExit, _orgExitRect, _orgExitFontSize, xRatio, yRatio);
+                // Chuyển sang Fullscreen Borderless
+                this.FormBorderStyle = FormBorderStyle.None;
+                this.WindowState = FormWindowState.Maximized;
+            }
+            else
+            {
+                // Quay về cửa sổ bình thường
+                this.FormBorderStyle = oldStyle;
+                this.WindowState = oldState;
+            }
         }
-
-        // Hàm hỗ trợ tính toán kích thước mới (Dùng chung cho cả 3 nút)
-        private void UpdateControlSize(Button btn, Rectangle originalRect, float originalFontSize, float xRatio, float yRatio)
-        {
-            if (btn == null) return;
-
-            // Tính vị trí và kích thước mới dựa trên tỷ lệ
-            int newX = (int)(originalRect.X * xRatio);
-            int newY = (int)(originalRect.Y * yRatio);
-            int newWidth = (int)(originalRect.Width * xRatio);
-            int newHeight = (int)(originalRect.Height * yRatio);
-
-            // Áp dụng vào nút
-            btn.Bounds = new Rectangle(newX, newY, newWidth, newHeight);
-        }
-
-        // Vẽ hình nền thủ công để tối ưu hiệu năng
+        // Tự vẽ hình nền để mượt hơn (thay vì dùng BackgroundImage)
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
-            // Chỉ vẽ hình nền khi các nút Menu còn hiện (Tức là chưa vào game)
-            // Chúng ta kiểm tra btnNewGame như một đại diện
-            if (btnNewGame != null && btnNewGame.Visible && _backgroundImage != null)
+            // Chỉ vẽ hình nền khi đang ở Menu (tức là nút New Game còn hiện)
+            if (this.btnNewGame != null && this.btnNewGame.Visible && _backgroundImage != null)
             {
                 e.Graphics.DrawImage(_backgroundImage, this.ClientRectangle);
             }
         }
 
-        // --- CÁC HÀM XỬ LÝ SỰ KIỆN CLICK ---
+        // Logic co giãn nút New Game (Code cũ của bạn vẫn tốt)
+        // Trong MainMenuForm.cs
 
-        private void btnNewGame_Click(object sender, EventArgs e)
+        private void MainMenuForm_Resize(object sender, EventArgs e)
         {
-            StartGameLevel1();
-        }
-
-        private void btnOptions_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("Chức năng Cài đặt đang được phát triển!", "Thông báo");
-        }
-
-        private void btnExit_Click(object sender, EventArgs e)
-        {
-            Application.Exit();
-        }
-
-        // --- LOGIC VÀO GAME ---
-        private void StartGameLevel1()
-        {
-            // 1. Tạm dừng layout
-            this.SuspendLayout();
-
-            // 2. Khởi tạo màn chơi
-            MapLevel1 gameLevel = new MapLevel1
+            this.Invalidate();
+            if (btnNewGame != null && btnNewGame.Visible)
             {
-                Dock = DockStyle.Fill,
-                TabStop = true,
-                Name = "GameLevel1"
-            };
+                // 1. Giữ nguyên công thức chiều rộng
+                int newWidth = this.ClientSize.Width / 8;
+                int newHeight = newWidth / 3;
 
-            // 3. Đưa game vào Panel
-            contentPanel.Controls.Clear();
-            contentPanel.Controls.Add(gameLevel);
+                // Giới hạn nhỏ nhất
+                if (newWidth < 120) { newWidth = 120; newHeight = 35; }
 
-            // 4. Ẩn TOÀN BỘ các nút Menu
-            SetMenuButtonsVisible(false);
+                btnNewGame.Size = new Size(newWidth, newHeight);
 
-            // Xóa hình nền menu để giải phóng bộ nhớ
-            _backgroundImage?.Dispose();
-            _backgroundImage = null;
+                // 2. Căn giữa theo chiều ngang (Giữ nguyên)
+                btnNewGame.Left = (this.ClientSize.Width - btnNewGame.Width) / 2;
 
-            // 5. Hiện Panel game lên
-            contentPanel.Visible = true;
-            contentPanel.BringToFront();
+                //3. SỬA LẠI VỊ TRÍ DỌC (TOP)
 
-            // 6. Hoàn tất
-            this.ResumeLayout();
-            gameLevel.Focus();
-        }
+                // Cũ (Bị thấp): 
+                // btnNewGame.Top = (this.ClientSize.Height - btnNewGame.Height) / 2;
 
-        // Hàm tiện ích để Ẩn/Hiện đồng loạt 3 nút
-        private void SetMenuButtonsVisible(bool isVisible)
-        {
-            if (btnNewGame != null) btnNewGame.Visible = isVisible;
-            if (btnOptions != null) btnOptions.Visible = isVisible;
-            if (btnExit != null) btnExit.Visible = isVisible;
+                // Mới (Cao hơn, đúng thiết kế):
+                // Đặt nút ở vị trí 35% chiều cao màn hình (0.35)
+                // Nếu muốn cao hơn nữa thì giảm xuống 0.3, muốn thấp hơn thì tăng lên 0.4
+                btnNewGame.Top = (int)(this.ClientSize.Height * 0.27);
+
+                // 4. Chỉnh cỡ chữ (Giữ nguyên)
+                float fontSize = newHeight / 3.2f;
+                if (fontSize > 6)
+                    btnNewGame.Font = new Font(btnNewGame.Font.FontFamily, fontSize, FontStyle.Bold);
+            }
         }
 
         private void MainMenuForm_Disposed(object sender, EventArgs e)
@@ -204,7 +130,69 @@ namespace LapTrinhTrucQuangProjectTest
             _backgroundImage?.Dispose();
         }
 
-        // Hàm rỗng do Designer sinh ra (giữ lại để tránh lỗi)
+        // --- HÀM START GAME ĐÃ ĐƯỢC SỬA ---
+        private void StartGameLevel1()
+        {
+            // 1. Tạm dừng vẽ giao diện
+            this.SuspendLayout();
+
+            // 2. Khởi tạo Game (Lúc này contentPanel vẫn đang Visible = false nên người dùng không thấy màn hình đen/trắng)
+            MapLevel1 gameLevel = new MapLevel1
+            {
+                Dock = DockStyle.Fill,
+                TabStop = true,
+                Name = "GameLevel1"
+            };
+
+            // 3. Dọn dẹp và Thêm Game vào Panel
+            contentPanel.Controls.Clear();
+            contentPanel.Controls.Add(gameLevel);
+
+            // 4. Ẩn nút New Game & Xóa hình nền Menu
+            if (btnNewGame != null)
+            {
+                btnNewGame.Visible = false;
+            }
+            // Xóa hình nền để giải phóng RAM và tránh vẽ đè bên dưới
+            _backgroundImage?.Dispose();
+            _backgroundImage = null;
+
+            // 5. BƯỚC QUAN TRỌNG NHẤT: Bật Panel hiện lên
+            // Lúc này Game đã load xong rồi, nên nó hiện ra ngay lập tức
+            contentPanel.Visible = true;
+            contentPanel.BringToFront();
+
+            // 6. Cho phép vẽ lại
+            this.ResumeLayout();
+
+            // 7. Focus vào game
+            gameLevel.Focus();
+        }
+
+        private void btnNewGame_Click(object sender, EventArgs e)
+        {
+            StartGameLevel1();
+        }
+
         private void MainMenuForm_Load_1(object sender, EventArgs e) { }
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            // 1. Nhấn phím F -> Bật/Tắt toàn màn hình
+            if (keyData == Keys.F)
+            {
+                ToggleFullscreen();
+                return true; // Báo hiệu đã xử lý xong phím này
+            }
+
+            // 2. Nhấn phím ESC -> Thoát toàn màn hình (chỉ hoạt động nếu đang Fullscreen)
+            if (keyData == Keys.Escape && isFullscreen)
+            {
+                ToggleFullscreen();
+                return true;
+            }
+
+            // Trả về xử lý mặc định cho các phím khác (di chuyển, nhảy...)
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
     }
 }

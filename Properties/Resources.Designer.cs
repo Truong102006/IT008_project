@@ -63,26 +63,6 @@ namespace LapTrinhTrucQuangProjectTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap EX {
-            get {
-                object obj = ResourceManager.GetObject("EX", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap MN {
-            get {
-                object obj = ResourceManager.GetObject("MN", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap NG {
             get {
                 object obj = ResourceManager.GetObject("NG", resourceCulture);
@@ -93,9 +73,9 @@ namespace LapTrinhTrucQuangProjectTest.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap OT {
+        internal static System.Drawing.Bitmap NG1 {
             get {
-                object obj = ResourceManager.GetObject("OT", resourceCulture);
+                object obj = ResourceManager.GetObject("NG1", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
