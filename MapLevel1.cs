@@ -43,6 +43,7 @@ namespace LapTrinhTrucQuangProjectTest
         List<Rectangle> coin1 = new List<Rectangle>();
         List<Rectangle> coin2 = new List<Rectangle>();
         List<Rectangle> coin3 = new List<Rectangle>();
+        List<FloatingText> floatingTexts = new List<FloatingText>();
         List<Tile> tiles = new List<Tile>();
         List<Enemy> enemies = new List<Enemy>();
         Dictionary<string, Bitmap> tileAssets = new Dictionary<string, Bitmap>();
@@ -82,6 +83,26 @@ namespace LapTrinhTrucQuangProjectTest
             public Enemy(int x, int y, int w, int h)
             {
                 Rect = new Rectangle(x, y, w, h);
+            }
+        }
+
+        // Khuôn mẫu cho chữ bay lên với hiệu ứng dần nhạt đi tại điểm ăn tiền hoặc mất máu
+        class FloatingText
+        {
+            public string Text; // chữ muốn hiện
+            public float X, Y; // tọa độ hiện chữ
+            public int Alpha; // độ trong suốt (255 = rõ, 0 = tàng hình)
+            public Color TextColor; // màu chữ
+            public Brush TextBrush; // brush để vẽ
+
+            public FloatingText(string text, int x, int y, Color color) // viết chữ text tại vị trí (x,y) với màu color
+            {
+                Text = text;
+                X = x;
+                Y = y;
+                Alpha = 255; // lúc mới xuất hiện thì rõ nhất (255) và giảm dần về 0
+                TextColor = color;
+                TextBrush = new SolidBrush(color);
             }
         }
 
@@ -484,6 +505,15 @@ namespace LapTrinhTrucQuangProjectTest
             }
             catch { }
         }
+
+        // hàm tạo chữ bay:
+        private void AddFloatingText(string text, int x, int y, Color color)
+        {
+            // tạo chữ mới ngay tại vị trí x, y truyền vào
+            // trừ bớt Y đi 10px và cộng thêm X 10px để chữ hiện ngay phía trên bên phải vị trí mất máu hoặc ăn tiền
+            floatingTexts.Add(new FloatingText(text, x + 10, y - 10, color));
+        }
+
         // ===== WINDOW & GAME LOOP (ĐÃ SỬA ĐỔI) =====
         private void UpdateScale()
         {
@@ -676,15 +706,16 @@ namespace LapTrinhTrucQuangProjectTest
 
                     if (isFallingAttack && isAbove)
                     {
-                        // ==> PLAYER ĐẠP TRÚNG ĐẦU
+                        // nhảy vào đầu enemy
 
-                        // 1. Trừ máu quái
+                        // 1. Trừ máu enemy
                         en.CurrentHP--;
+                        AddFloatingText("CRIT!! +5", player.X, player.Y, Color.OrangeRed);
 
                         // 2. Nảy người chơi lên
                         jumping = true;
                         onGround = false;
-                        jumpSpeed = 15;
+                        jumpSpeed = en.IsBoss ? 30 : 15;
 
                         // 3. Kiểm tra chết
                         if (en.CurrentHP <= 0)
@@ -700,7 +731,7 @@ namespace LapTrinhTrucQuangProjectTest
                     }
                     else
                     {
-                        // ==> PLAYER BỊ ĐÁNH (Thua)
+                        // xử lí va chạm enemy
 
                         Rectangle damageZone = new Rectangle(
                             en.Rect.X + 10,
@@ -713,8 +744,9 @@ namespace LapTrinhTrucQuangProjectTest
                         {
                             if (currentHealth > 0)
                             {
-                                currentHealth -= (en.IsBoss ? 30 : 20);
-
+                                currentHealth -= (en.IsBoss ? 30 : 10);
+                                if (en.IsBoss) { AddFloatingText("-30", player.X, player.Y, Color.Red); }
+                                else { AddFloatingText("-10", player.X, player.Y, Color.Red); }
                                 if (player.X < en.Rect.X) player.X -= 50;
                                 else player.X += 50;
 
@@ -749,6 +781,7 @@ namespace LapTrinhTrucQuangProjectTest
                         if (!hitTrap)
                         {
                             currentHealth -= 10;
+                            AddFloatingText("-10", player.X, player.Y, Color.Red);
                             hitTrap = true;
                         }
                         jumping = true;
@@ -961,7 +994,8 @@ namespace LapTrinhTrucQuangProjectTest
                 {
                     isCollected = true;                   
                     score += 1;
-                    coin1.RemoveAt(i);
+                    AddFloatingText("+1", player.X, player.Y, Color.Gold);
+                    coin1.RemoveAt(i);                    
                 }
             }
             for (int i = coin2.Count - 1; i >= 0; i--)
@@ -970,6 +1004,7 @@ namespace LapTrinhTrucQuangProjectTest
                 {
                     isCollected = true;
                     score += 5;
+                    AddFloatingText("+5", coin2[i].X, coin2[i].Y, Color.Pink);
                     coin2.RemoveAt(i);
                 }
             }
@@ -979,11 +1014,36 @@ namespace LapTrinhTrucQuangProjectTest
                 {
                     isCollected = true;
                     score += 10;
+                    AddFloatingText("SECRET!! +10", coin3[i].X, coin3[i].Y, Color.Crimson);
                     coin3.RemoveAt(i);
                 }
             }
-            // === Chọn state theo DI CHUYỂN THỰC TẾ ===
 
+            // XỬ LÝ CHỮ BAY (FADING TEXT):
+            for (int i = floatingTexts.Count - 1; i >= 0; i--)
+            {
+                var ft = floatingTexts[i];
+
+                // 1. bay lên trên
+                ft.Y -= 2; // tốc độ bay lên (càng lớn càng nhanh)
+
+                // 2. mờ dần
+                ft.Alpha -= 10; // tốc độ mờ (càng lớn càng nhanh mờ)
+
+                // 3. nếu đã mở hết cỡ (Alpha <= 0) thì xóa chữ luôn
+                if (ft.Alpha <= 0)
+                {
+                    ft.TextBrush.Dispose(); // Giải phóng 
+                    floatingTexts.RemoveAt(i);
+                }
+                else
+                {
+                    // cập nhật màu với độ trong suốt mới
+                    ft.TextBrush = new SolidBrush(Color.FromArgb(ft.Alpha, ft.TextColor));
+                }
+            }
+
+            // === Chọn state theo DI CHUYỂN THỰC TẾ ===
             bool inAir = jumping || !onGround;
             bool movingNow = (player.X != prevX);
 
@@ -1024,7 +1084,7 @@ namespace LapTrinhTrucQuangProjectTest
         {
             if (isGameOver)
             {
-                if (e.KeyCode == Keys.Enter)
+                if (e.KeyCode == Keys.R)
                 {
                     isGameOver = false;
                     currentHealth = maxHealth;
@@ -1035,10 +1095,10 @@ namespace LapTrinhTrucQuangProjectTest
                 return;
             }
 
-            if (e.KeyCode == Keys.Left || e.KeyCode == Keys.A) goLeft = true;
-            if (e.KeyCode == Keys.Right || e.KeyCode == Keys.D) goRight = true;
+            if (e.KeyCode == Keys.A) goLeft = true;
+            if (e.KeyCode == Keys.D) goRight = true;
 
-            if ((e.KeyCode == Keys.Space || e.KeyCode == Keys.Up || e.KeyCode == Keys.W) && !jumping)
+            if (e.KeyCode == Keys.W && !jumping)
             {
                 if (onGround || IsTouchingPlatformBelow())
                 {
@@ -1047,14 +1107,15 @@ namespace LapTrinhTrucQuangProjectTest
                     onGround = false;
                 }
             }
-            if (e.KeyCode == Keys.D6)
-            {
-                currentLevel = 6;
-                CreateLevel6();
-                currentHealth = maxHealth;
-                jumping = false;
-                onGround = false;
-                gameTimer.Start();
+            
+            // bấm nút i thì sẽ chuyển tới màn thứ i ( khi xong game sẽ xóa tính năng này )
+            for (int i = 1;i <= 6;i++) {
+                Keys key = (Keys)((int)Keys.D0 + i);
+                if (e.KeyCode == key)
+                {
+                    currentLevel = i;
+                    LoadLevel(i);            
+                }
             }
         }
 
@@ -1195,6 +1256,7 @@ namespace LapTrinhTrucQuangProjectTest
         {
             MapLevel3 map = new MapLevel3();
             LoadMapFromContainer(map);
+            LoadBackground(@"Images\background4.gif");
             map.Dispose();
         }
         private void CreateLevel4()
@@ -1215,6 +1277,43 @@ namespace LapTrinhTrucQuangProjectTest
             MapLevel6 map = new MapLevel6();
             LoadMapFromContainer(map);
             map.Dispose();
+        }
+        
+        // Hàm load màn chơi:
+        private void LoadLevel(int level)
+        {
+            // 1. Dọn dẹp màn cũ 
+            platforms.Clear();
+            tiles.Clear();
+            enemies.Clear();
+            coin1.Clear(); coin2.Clear(); coin3.Clear();
+            // clear các list khác nếu có 
+
+            // 2. Gọi hàm tạo màn tương ứng
+            switch (level)
+            {
+                case 1: CreateLevel1(); break;
+                case 2: CreateLevel2(); break;
+                case 3: CreateLevel3(); break;
+                case 4: CreateLevel4(); break;
+                case 5: CreateLevel5(); break;
+                case 6: CreateLevel6(); break;
+                default: return; // Nếu số không hợp lệ thì thoát
+            }
+
+            // 3. Reset trạng thái nhân vật
+            currentLevel = level;
+            currentHealth = maxHealth;
+            jumping = false;
+            onGround = false;
+            jumpSpeed = 0;
+            isGameOver = false;
+            goLeft = false;
+            goRight = false;
+
+            // 4. Khởi động lại game
+            gameTimer.Start();
+            Invalidate();
         }
         // ===== DRAW =====
         protected override void OnPaint(PaintEventArgs e)
@@ -1404,6 +1503,15 @@ namespace LapTrinhTrucQuangProjectTest
             }
             // ======================================================
 
+            // VẼ CHỮ BAY:
+            using (Font fontFx = new Font("Arial Black", 12, FontStyle.Bold))
+            {
+                foreach (var ft in floatingTexts)
+                {
+                    e.Graphics.DrawString(ft.Text, fontFx, ft.TextBrush, ft.X, ft.Y);
+                }
+            }
+
             // ===== VẼ MÀN HÌNH GAME OVER =====
             if (isGameOver)
             {
@@ -1429,7 +1537,7 @@ namespace LapTrinhTrucQuangProjectTest
                     e.Graphics.DrawString("GAME OVER", this.Font, Brushes.Red, 100, 100);
                 }
 
-                string text2 = "Nhấn ENTER để chơi lại";
+                string text2 = "Nhấn R để chơi lại";
                 using (Font font2 = new Font("Arial", 16, FontStyle.Regular))
                 {
                     SizeF size2 = e.Graphics.MeasureString(text2, font2);
@@ -1437,7 +1545,7 @@ namespace LapTrinhTrucQuangProjectTest
                     float y2 = (baseHeight / 2) + 70;
 
                     e.Graphics.DrawString(text2, font2, Brushes.Red, x2, y2);
-                }
+                }               
             }
         }
 

@@ -166,6 +166,8 @@
             this.btnContinue = new System.Windows.Forms.Button();
             this.btnHome = new System.Windows.Forms.Button();
             this.btnMenu = new System.Windows.Forms.Button();
+            this.panel88 = new System.Windows.Forms.Panel();
+            this.panel91 = new System.Windows.Forms.Panel();
             this.SuspendLayout();
             // 
             // panel54
@@ -1515,6 +1517,24 @@
             this.btnMenu.UseVisualStyleBackColor = false;
             this.btnMenu.Click += new System.EventHandler(this.btnMenu_Click);
             // 
+            // panel88
+            // 
+            this.panel88.BackColor = System.Drawing.Color.SaddleBrown;
+            this.panel88.Location = new System.Drawing.Point(970, 14);
+            this.panel88.Name = "panel88";
+            this.panel88.Size = new System.Drawing.Size(45, 36);
+            this.panel88.TabIndex = 105;
+            this.panel88.Tag = "coin_1";
+            // 
+            // panel91
+            // 
+            this.panel91.BackColor = System.Drawing.Color.SaddleBrown;
+            this.panel91.Location = new System.Drawing.Point(1017, 7);
+            this.panel91.Name = "panel91";
+            this.panel91.Size = new System.Drawing.Size(45, 36);
+            this.panel91.TabIndex = 105;
+            this.panel91.Tag = "coin_1";
+            // 
             // MapLevel1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -1560,6 +1580,8 @@
             this.Controls.Add(this.panel126);
             this.Controls.Add(this.panel121);
             this.Controls.Add(this.panel125);
+            this.Controls.Add(this.panel91);
+            this.Controls.Add(this.panel88);
             this.Controls.Add(this.panel120);
             this.Controls.Add(this.panel45);
             this.Controls.Add(this.panel44);
@@ -1822,5 +1844,7 @@
         private System.Windows.Forms.Button btnHome;
         private System.Windows.Forms.Button btnContinue;
         private System.Windows.Forms.Button btnReset;
+        private System.Windows.Forms.Panel panel88;
+        private System.Windows.Forms.Panel panel91;
     }
 }

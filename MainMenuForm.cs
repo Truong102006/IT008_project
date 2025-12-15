@@ -11,6 +11,11 @@ namespace LapTrinhTrucQuangProjectTest
         private Bitmap _backgroundImage;
         private Panel contentPanel;
 
+        // Biến cho chức năng bật full màn hình
+        private bool isFullscreen = false;
+        private FormBorderStyle oldStyle = FormBorderStyle.Sizable;
+        private FormWindowState oldState = FormWindowState.Normal;
+
         // --- CÁC BIẾN LƯU TRỮ TRẠNG THÁI GỐC ĐỂ TÍNH TỶ LỆ ---
         private Size _originalFormSize;
 
@@ -188,6 +193,47 @@ namespace LapTrinhTrucQuangProjectTest
 
         // Hàm rỗng do Designer sinh ra (giữ lại để tránh lỗi)
         private void MainMenuForm_Load_1(object sender, EventArgs e) { }
+
+        // Hàm bật full màn hình:
+        private void ToggleFullscreen()
+        {
+            isFullscreen = !isFullscreen;
+
+            if (isFullscreen)
+            {
+                // Lưu trạng thái cũ để lát quay lại
+                oldStyle = this.FormBorderStyle;
+                oldState = this.WindowState;
+
+                // Chuyển sang Fullscreen Borderless
+                this.FormBorderStyle = FormBorderStyle.None;
+                this.WindowState = FormWindowState.Maximized;
+            }
+            else
+            {
+                // Quay về cửa sổ bình thường
+                this.FormBorderStyle = oldStyle;
+                this.WindowState = oldState;
+            }
+        }
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            // Nếu bấm F11 -> Bật/Tắt toàn màn hình
+            if (keyData == Keys.F)
+            {
+                ToggleFullscreen();
+                return true; // Báo hiệu đã xử lý phím này
+            }
+
+            // Nếu bấm ESC -> Thoát Fullscreen (hoặc hiện menu Pause sau này)
+            if (keyData == Keys.F && isFullscreen)
+            {
+                ToggleFullscreen();
+                return true;
+            }
+
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
         public void ReturnToMainMenu()
         {
             // 1. Ẩn Panel chứa game và xóa User Control để giải phóng RAM

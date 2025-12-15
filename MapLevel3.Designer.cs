@@ -77,7 +77,7 @@
             this.btnContinue.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
             this.btnContinue.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
             this.btnContinue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnContinue.Location = new System.Drawing.Point(430, 170);
+            this.btnContinue.Location = new System.Drawing.Point(744, 5);
             this.btnContinue.Name = "btnContinue";
             this.btnContinue.Size = new System.Drawing.Size(200, 50);
             this.btnContinue.TabIndex = 119;
@@ -95,7 +95,7 @@
             this.btnReset.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
             this.btnReset.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
             this.btnReset.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnReset.Location = new System.Drawing.Point(430, 270);
+            this.btnReset.Location = new System.Drawing.Point(538, 5);
             this.btnReset.Name = "btnReset";
             this.btnReset.Size = new System.Drawing.Size(200, 50);
             this.btnReset.TabIndex = 120;
