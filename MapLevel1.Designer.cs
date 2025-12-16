@@ -337,9 +337,9 @@
             this.panel111.BackColor = System.Drawing.Color.SaddleBrown;
             this.panel111.Location = new System.Drawing.Point(172, 549);
             this.panel111.Name = "panel111";
-            this.panel111.Size = new System.Drawing.Size(918, 80);
+            this.panel111.Size = new System.Drawing.Size(915, 80);
             this.panel111.TabIndex = 61;
-            this.panel111.Tag = "water_2";
+            this.panel111.Tag = "water_3";
             // 
             // panel30
             // 

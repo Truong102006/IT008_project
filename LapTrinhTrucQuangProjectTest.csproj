@@ -525,6 +525,12 @@
     <Content Include="Images\water4.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Images\water5.gif">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\water6.gif">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="Resources\RSGame.png" />
     <None Include="Resources\Continue.png" />
     <None Include="Resources\Home.png" />
