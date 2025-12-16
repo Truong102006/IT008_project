@@ -873,33 +873,40 @@ namespace LapTrinhTrucQuangProjectTest
             if (goRight) { player.X += playerSpeed; facingRight = true; }
 
             // --- SAU khi cập nhật X từ phím trái/phải ---
-            int oldX = prevX;
-            Rectangle afterX = GetCollRect(player, facingRight); // hitbox thử nghiệm
+            int oldX = prevX; // vị trí X trước khi bước
+            Rectangle afterX = GetCollRect(player, facingRight); // đây là hitbox thử nghiệm được máy tạo ra để thử việc va chạm với các platforms xem có bị dính vào tường hay không 
 
-            foreach (var p in Solid)
+            foreach (var p in Solid) // lấy hitbox thử nghiệm afterX đó cho va chạm với tất cả platforms
             {
-                if (!afterX.IntersectsWith(p)) continue; // nếu không chạm thì bỏ qua
+                if (!afterX.IntersectsWith(p)) continue; // nếu không chạm vào platform đó thì continue
+                                                         // nếu có chạm ( nghĩa là bước đi đã khiến hitbox dính vào tường hoặc vào đất thì sẽ xét như bên dưới )
 
-                // Kiểm tra xem có phải va chạm ngang (đụng tường) hay không
-                bool underCeilingNow = afterX.Top < p.Bottom;
-                bool underCeilingPrev = prevColl.Top < p.Bottom;
+                // Chỉ chặn khi ta đang ở "dưới" bệ (đỉnh hitbox cao hơn/touch đáy bệ)
+                bool underCeilingNow = afterX.Top < p.Bottom; // kiểm tra đầu của hitbox sau khi di chuyển có đang nằm thấp hơn đáy cục gạch không
+                // underCeilingNow nếu đúng thì nghĩa là thân nhân vật đang nằm ngang với cục gạch ( đụng tường )
+                // underCeilingNow nếu sai thì nhân vật đang ở trên nóc cục gạch ( đứng trên đất )
+                bool underCeilingPrev = prevColl.Top < p.Bottom; // kiểm tra tương tự với hitbox lúc trước khi di chuyển  
 
                 if (underCeilingNow && underCeilingPrev)
+                // nếu lúc trước khi di chuyển và sau khi di chuyển mà thân nhân vật đều đang đụng tường thì làm như sau:
                 {
-                    // Nếu đúng là đụng tường thì quay về vị trí cũ
-                    player.X = oldX;
-                    afterX = GetCollRect(player, facingRight);
-                    break;
+                    player.X = oldX; // phát hiện đụng tường => quay lại oldX ngay lập tức
+                    afterX = GetCollRect(player, facingRight); // cập nhật lại hitbox thử nghiệm cho các lần thử tiếp theo
+                    break; // đụng tường thì quay lại rồi break, không cần kiểm tra các cục gạch khác
                 }
+                // *TÓM TẮT: đoạn code trên dùng để tránh trường hợp nhân vật va chạm vào tường theo bề ngang và hitbox của nhân vật đi thẳng luôn vào tường, thay vào đó dùng hitbox thử nghiệm đi vào cục gạch trước để xem có phải là va chạm ngang hay không, nếu phải thì cho lùi lại hitbox oldX còn nếu là va chạm từ trên xuống tức là nhân vật đang nằm ở trên cục gạch thì cho phép
+                // *QUAN TRỌNG: nếu không có thì nhân vật sẽ kẹt vĩnh viễn trong tường
             }
 
-            // đoạn code này để cho nhân vật nếu chạm nước thì tắt chế độ nhảy ngay để không bị rơi quá nhanh
+            // đoạn code if này để cho nhân vật đang nhảy và rơi xuống nếu chạm nước thì tắt chế độ nhảy ngay lập tức và chuyển sang trạng thái ngập nước, vì nếu đang nhảy và rớt xuống mà gặp nước không ngừng trạng thái nhảy thì trọng lực sẽ không bị thay đổi mà nhân vật bị quán tính kéo thẳng xuống vực
+            // dễ hiểu thì đoạn code này mô phỏng khi nhảy xuống nước thì lực kéo xuống khi nhảy bị triệt tiêu dần dần
             if (isSubmerged)
             {
+                // Nếu đang ở dưới nước và đang bị kéo rơi xuống (do hết lực nhảy)
                 if (jumping && jumpSpeed < 0)
                 {
-                    jumping = false;
-                    jumpSpeed = 0;
+                    jumping = false; // Tắt chế độ nhảy ngay lập tức
+                    jumpSpeed = 0;   // Xóa bỏ quán tính rơi nhanh
                 }
             }
 
@@ -930,31 +937,53 @@ namespace LapTrinhTrucQuangProjectTest
                 }
             }
 
-            // ---- BẮT ĐẤT ỔN ĐỊNH: Logic vật lý tiếp đất ----
+            // ---- BẮT ĐẤT ỔN ĐỊNH: chỉ đáp khi cắt qua mặt trên; keepStick chỉ cho "cùng bệ" ----
+            // Logic vật lý tiếp đất, giúp nhân vật không bị trượt, không bị rơi xuyên sàn và đứng được trên mép vực
+
             bool wasGrounded = onGround;
+            // lưu trạng thái tiếp đất của nhân vật
             onGround = false;
 
             int prevBottom = prevColl.Bottom;
+            // lưu vị trí chân cũ
             int bottom = coll.Bottom;
+            // vị trí chân hiện tại
 
-            // Các chỉ số dung sai giúp game dễ nhảy hơn
+            // những chỉ số dưới đây giúp game dễ nhảy hơn và bỏ qua lỗi sai của người chơi nhiều hơn, kéo dài thêm các chỉ số hitbox một tí để người chơi không bị rớt vì lệch một tí pixel:
             int footSpan = Math.Max(12, coll.Width * 2 / 3);
+            // chiều rộng bàn chân của nhân vật nhỏ hơn chiều rộng nhân vật thực tế
+
             int edgeGrace = 4;
+            //mở rộng hitbox của platform ra thêm 4px ở hai bên, giúp nhân vật dễ dàng chạm vào mép platform
+
             int keepTol = 5;
+            // 5 pixel là khoảng cách tối đa mà chân được phép hở khỏi mặt đất mà vẫn không rớt
+
             int minSupportCross = 2;
+            // mức độ chồng lên của pixel nhân vật đối với platform tối thiểu để nhân vật được phép tiếp đất lên platform, giá trị này nhỏ chỉ 2 pixel để việc tiếp đất dễ dàng và mượt mà hơn
+
             int minSupportStick = Math.Max(10, coll.Width / 2);
+            // khi đã tiếp đất và đứng vững thì yêu cầu phải chồng lên bệ đất nhiều hơn (10pixel), để nhân vật không có hiệu ứng đã đứng ngoài rìa platform nhưng vẫn không rớt
 
             int footLeft = coll.Left + coll.Width / 2 - footSpan / 2;
+            // vị trí tọa độ bên trái của chân nhân vật
             int footRight = footLeft + footSpan;
+            // vị trí tọa độ bên phải
 
             bool falling = player.Y > prevY;
             bool rising = player.Y < prevY;
+            // hai biến này dùng để phân biệt đang nhảy hay đang rớt xuống dùng để phân biệt va chạm trần với va chạm đất
 
+            // Tạo một list tạm để chứa tất cả vật thể rắn:
             var Objects = new List<Rectangle>();
+
+            // Thêm platform cũ vào trước (giữ nguyên thứ tự để groundedIndex không bị loạn):
             foreach (var p in platforms) Objects.Add(p);
+
+            // Thêm tiles mới vào sau (CÓ CHỌN LỌC):
             foreach (var t in tiles)
             {
-                // Chỉ tính là tile rắn nếu không phải nước, bẫy, trang trí
+                // Chỉ tính là tile nếu không phải là nước, bẫy, hoặc đồ trang trí
                 if (!t.Type.StartsWith("water_") && !t.Type.StartsWith("trap_") && !t.Type.StartsWith("deco_"))
                 {
                     Objects.Add(t.Rect);
@@ -968,40 +997,57 @@ namespace LapTrinhTrucQuangProjectTest
 
                 int pLeft = p.Left - edgeGrace;
                 int pRight = p.Right + edgeGrace;
+                // kéo rộng platform sang 2 bên
 
                 int overlap = Math.Min(footRight, pRight) - Math.Max(footLeft, pLeft);
+                // overlap dùng để tính xem bàn chân của nhân vật có đang nằm trên platform không và nằm trên bao nhiêu pixel
+                // nếu overlap lớn hơn 0 thì chân đang chồng lên platform ít nhất 1 pixel
 
-                if (overlap <= 0) continue; // chân không chạm platform
+                if (overlap <= 0) continue;
+                // nếu overlap = 0 thì chân chỉ chạm mép platform còn < 0 thì nằm ở ngoài nên bỏ qua
 
                 // Đáp: chỉ khi đang rơi và đáy cắt qua mặt trên
-                bool crossedTop = (falling &&
-                                     (prevBottom <= p.Top + 2) &&
-                                     (bottom >= p.Top - 2) &&
-                                     (overlap >= minSupportCross));
+                bool crossedTop = (falling && // đang rơi xuống
+                                  (prevBottom <= p.Top + 2) && // lúc trước chân phải nằm cách xa ở phía trên mặt đất tối thiểu là 2 pixel
+                                  (bottom >= p.Top - 2) && // lúc hiện tại chân đã ở dưới mặt gạch tối thiểu 2 pixel
+                                  (overlap >= minSupportCross)); // phải có độ chồng lên tối thiểu là 2 pixel
 
+                // Nếu trước đó đang đứng trên đất (wasGrounded), thì cho phép chuyển sang bất kỳ cục gạch nào khác
+                // miễn là có chồng lên nhau dù chỉ 1px.
                 int needStickOverlap = wasGrounded ? 1 : minSupportStick;
 
                 bool keepStick =
-                    wasGrounded && !rising &&
+                    wasGrounded && !rising && // nếu đang đứng vững và đang không nhảy lên
                     Math.Abs(prevBottom - p.Top) <= keepTol &&
-                    Math.Abs(bottom - p.Top) <= keepTol &&
-                    (overlap >= needStickOverlap);
+                    Math.Abs(bottom - p.Top) <= keepTol && // khoảng cách chân lúc trước và lúc sau đều phải nhỏ hơn dung sai tối đa để đứng trên platform
+                    (overlap >= needStickOverlap); // chân nhân vật phải chồng lên platform ít nhất bằng diện tích tối thiểu cần thiết để đứng vững
 
-                if (crossedTop || keepStick) // nếu đáp đất hoặc đang đứng vững
+                if (crossedTop || keepStick) // nếu nhân vật đang đáp đất hoặc đang dính vào đất
                 {
+                    // ghim sao cho coll.Bottom = p.Top:
+
                     player.Y = p.Top - (coll.Height + HB_TOP);
+                    // ta có: player.Y = coll.Bottom - (coll.Height + HB_TOP) nghĩa là đỉnh nhân vật = đáy hitbox đi lên một khoảng bằng chiều cao tổng thể
+                    // nên muốn vị trí coll.Bottom = p.Top, ta phải làm cho đỉnh của nhân vật, tức là player.Y = p.Top - (coll.Height + HB_TOP)
+                    // tức là đỉnh của nhân vật = đỉnh của mặt phẳng đi lên một khoảng bằng chiều cao tổng thể
+                    // từ đó ta có được coll.Bottom hay chân của hitbox sẽ ngang hàng với đỉnh của mặt phẳng hay p.Top
 
                     coll = GetCollRect(player, facingRight);
+                    //tính toán lại hitbox lần cuối, sử dụng vị trí player.Y mới
 
-                    onGround = true; // đã chạm đất
-                    groundedIndex = i;
+                    onGround = true; // đã chạm đất vì đang đứng trên platform
+                    groundedIndex = i; // ghi lại vị trí bệ đang đứng dùng cho keepStick cho frame tiếp theo
                     jumping = false;
                     jumpSpeed = 0;
+                    // triệt tiêu toàn bộ lực nhảy và trạng thái nhảy vì đã tiếp đất thành công
                     break;
+                    // không kiểm tra các platform khác nữa vì đã tìm thấy platform tiếp đất thành công
                 }
             }
 
+            // nếu đã kiểm tra hết platform mà onGround vẫn là false thì nhân vật không đứng trên platform nào
             if (!onGround) groundedIndex = null;
+
 
 
             //GIỚI HẠN BIÊN
