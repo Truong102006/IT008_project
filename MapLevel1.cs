@@ -16,6 +16,8 @@ namespace LapTrinhTrucQuangProjectTest
         Bitmap backgroundImg; // biến chứa ảnh nền (GIF hoặc PNG đều được)
         Bitmap portal;        // Cổng dịch chuyển
         Bitmap gameOverImg;
+        bool isLoading = true; // Mặc định là true khi vừa mở game
+        Bitmap loadingBg;      // Biến chứa ảnh nền màn hình chờ
         bool goLeft, goRight,goUp,goDown, jumping, onGround, levelTransitioning;
         int jumpSpeed = 0, force = 20, gravity = 8, playerSpeed = 3, currentLevel = 1;
         int score = 0;
@@ -286,6 +288,13 @@ namespace LapTrinhTrucQuangProjectTest
         public MapLevel1()
         {
             InitializeComponent();
+            // Nạp ảnh chờ NGAY LẬP TỨC trước khi làm các việc khác
+            try
+            {
+                if (File.Exists(@"Images\loading_screen.png"))
+                    loadingBg = (Bitmap)Image.FromFile(@"Images\loading_screen.png");
+            }
+            catch { /* Xử lý nếu file lỗi */ }
             CreateLevel1(); // nạp màn 1
             // Gắn sự kiện Load vào hàm khởi tạo game
             this.Load += MapLevel1_Load;
@@ -329,6 +338,36 @@ namespace LapTrinhTrucQuangProjectTest
                 _orgResetFontSize = btnReset.Font.Size;
             }
 
+
+            currentAnim = idleAnim; currentAnim.Reset();
+            gameTimer.Interval = 16;
+            gameTimer.Tick += GameLoop;
+
+
+            KeyDown += KeyIsDown;
+            KeyUp += KeyIsUp;
+
+            sw.Start();
+
+            // ==== FIX: scale ngay khi khởi động ====
+            UpdateScale();
+            this.Refresh(); // Sử dụng Refresh() thay vì Invalidate() để ép WinForms vẽ ngay lập tức
+            // XÓA: this.Shown += ... (Chỉ Form có)
+            // this.Shown += (s, _) => UpdateScale();
+            // TẠO ĐỘ TRỄ ĐỂ HIỆN ẢNH LOADING TRƯỚC
+            Timer delayLoader = new Timer();
+            delayLoader.Interval = 100; // Đợi 0.1 giây
+            delayLoader.Tick += (s, ev) => {
+                delayLoader.Stop();
+                FinishLoadingAssets(); // Gọi hàm nạp ảnh nặng ở trên
+                delayLoader.Dispose(); // Giải phóng timer tạm này sau khi dùng xong
+            };
+            delayLoader.Start();
+        }
+
+        private void FinishLoadingAssets()
+        {
+            // CHUYỂN TOÀN BỘ CODE NẠP ẢNH TỪ LOAD VÀO ĐÂY
             // Tinh chỉnh độ lệch vẽ cho nhân vật chính để chân khớp với hitbox
             runAnim.DrawOffsetX = 8;
             idleAnim.DrawOffsetX = 8;
@@ -336,7 +375,7 @@ namespace LapTrinhTrucQuangProjectTest
             // nếu cần đẩy sang trái thì dùng số âm
             // runAnim.DrawOffsetX = -4;
 
-            // LoadAnimationEven: Hàm helper nạp và cắt ảnh sprite sheet
+
             LoadAnimationEven(RunPath, runAnim, 6, alphaThreshold: 16, tightenEdges: false);
             LoadAnimationEven(JumpPath, jumpAnim, 4, alphaThreshold: 16, tightenEdges: false);
             LoadAnimationEven(IdlePath, idleAnim, 4, alphaThreshold: 16, tightenEdges: false);
@@ -355,55 +394,15 @@ namespace LapTrinhTrucQuangProjectTest
             LoadAnimationEven(TrapPath4, trapAnim4, 6, alphaThreshold: 16, tightenEdges: true);
             LoadAnimationEven(TrapPath5, trapAnim5, 6, alphaThreshold: 16, tightenEdges: true);
 
-            currentAnim = idleAnim; currentAnim.Reset();
-            gameTimer.Interval = 16;
-            gameTimer.Tick += GameLoop;
-            gameTimer.Start();
+            // NẠP ẢNH CHO PANEL (Vòng lặp for)
+            for (int i = 1; i <= 86; i++) { AddTileImage("tile_" + i, "tile_" + i + ".png"); }
+            for (int i = 1; i <= 68; i++) { if (i != 7 && i != 53 && i != 65) AddTileImage("deco_" + i, "deco_" + i + ".png"); }
+            for (int i = 1; i <= 4; i++) { AddTileImage("deco_bui" + i, "deco_bui" + i + ".png"); }
+            for (int i = 1; i <= 3; i++) { AddTileImage("deco_cay" + i, "deco_cay" + i + ".png"); }
+            for (int i = 1; i <= 2; i++) { AddTileImage("deco_da" + i, "deco_da" + i + ".png"); }
+            for (int i = 1; i <= 9; i++) { AddTileImage("deco_arm" + i, "deco_arm" + i + ".png"); }
+            for (int i = 1; i <= 3; i++) { AddTileImage("stair_" + i, "stair_" + i + ".png"); }
 
-
-            KeyDown += KeyIsDown;
-            KeyUp += KeyIsUp;
-
-            sw.Start();
-
-            // ==== FIX: scale ngay khi khởi động ====
-            UpdateScale();
-            // XÓA: this.Shown += ... (Chỉ Form có)
-            // this.Shown += (s, _) => UpdateScale();
-
-
-            // NẠP ẢNH CHO PANEL:
-            for (int i = 1; i <= 86; i++)
-            {
-                AddTileImage("tile_" + i, "tile_" + i + ".png");
-            }
-            for (int i = 1; i <= 68; i++)
-            {
-                if (i != 7 && i != 53 && i != 65)
-                {
-                    AddTileImage("deco_" + i, "deco_" + i + ".png");
-                }
-            }
-            for (int i = 1; i <= 4; i++)
-            {
-                AddTileImage("deco_bui" + i, "deco_bui" + i + ".png");
-            }
-            for (int i = 1; i <= 3; i++)
-            {
-                AddTileImage("deco_cay" + i, "deco_cay" + i + ".png");
-            }
-            for (int i = 1; i <= 2; i++)
-            {
-                AddTileImage("deco_da" + i, "deco_da" + i + ".png");
-            }
-            for (int i = 1; i <= 9; i++)
-            {
-                AddTileImage("deco_arm" + i, "deco_arm" + i + ".png");
-            }
-            for (int i = 1; i <= 3; i++)
-            {
-                AddTileImage("stair_" + i, "stair_" + i + ".png");
-            }
             AddTileImage("tile_invisible", "tile_invisible.png");
             AddTileImage("deco_53", "deco_53.gif");
             AddTileImage("deco_65", "deco_65.gif");
@@ -416,16 +415,19 @@ namespace LapTrinhTrucQuangProjectTest
             AddTileImage("water_4", "water6.gif");
             AddTileImage("water_5", "water7.gif");
 
-
             try
             {
-                if (File.Exists(@"Images\platform.png"))
-                    platformImg = (Bitmap)Image.FromFile(@"Images\platform.png");
-                if (File.Exists(@"Images\GameOverFont_2.png"))
-                    gameOverImg = (Bitmap)Image.FromFile(@"Images\GameOverFont_2.png");
+                if (File.Exists(@"Images\platform.png")) platformImg = (Bitmap)Image.FromFile(@"Images\platform.png");
+                if (File.Exists(@"Images\GameOverFont_2.png")) gameOverImg = (Bitmap)Image.FromFile(@"Images\GameOverFont_2.png");
             }
             catch { }
+
             LoadPortal(@"Images\portal.gif");
+
+            // KẾT THÚC LOADING
+            isLoading = false;
+            gameTimer.Start(); // Bắt đầu chạy game sau khi nạp xong
+            Invalidate();      // Vẽ lại để hiện Map
         }
         // LoadAnimationEven: Hàm helper nạp và cắt ảnh sprite sheet
         // hàm chính để quản lí các hàm điều chỉnh frame khác tạo thành một hoạt ảnh hoàn chỉnh:
@@ -700,7 +702,7 @@ namespace LapTrinhTrucQuangProjectTest
                 case 3: CreateLevel3(); break;
                 case 4: CreateLevel4(); break;
                 case 5: CreateLevel5(); break;
-                case 6: CreateLevel6(); break;
+                //case 6: CreateLevel6(); break;
                 default: CreateLevel1(); break;
             }
 
@@ -1333,7 +1335,7 @@ namespace LapTrinhTrucQuangProjectTest
             if (e.KeyCode == Keys.S) goDown = true;
 
             // bấm nút i thì sẽ chuyển tới màn thứ i ( khi xong game sẽ xóa tính năng này )
-            for (int i = 1; i <= 6; i++)
+            for (int i = 1; i <= 5; i++)
             {
                 Keys key = (Keys)((int)Keys.D0 + i);
                 if (e.KeyCode == key)
@@ -1387,7 +1389,7 @@ namespace LapTrinhTrucQuangProjectTest
         private void NextLevel()
         {
             currentLevel++;
-            if (currentLevel > 6) { gameTimer.Stop(); MessageBox.Show("🎉 Bạn đã hoàn thành tất cả các màn!"); ; return; }
+            if (currentLevel > 5) { gameTimer.Stop(); MessageBox.Show("🎉 Bạn đã hoàn thành tất cả các màn!"); ; return; }
             platforms.Clear();
             // xóa hết dữ liệu platform của màn chơi cũ khỏi bộ nhớ
             switch (currentLevel)
@@ -1396,7 +1398,7 @@ namespace LapTrinhTrucQuangProjectTest
                 case 3: CreateLevel3(); break;
                 case 4: CreateLevel4(); break;
                 case 5: CreateLevel5(); break;
-                case 6: CreateLevel6(); break;
+                //case 6: CreateLevel6(); break;
             }
             levelTransitioning = false;
             // tắt flag chuyển màn để chuẩn bị cho lần chạm cửa tiếp theo
@@ -1517,13 +1519,13 @@ namespace LapTrinhTrucQuangProjectTest
             LoadMapFromContainer(map);
             map.Dispose();
         }
-
-        private void CreateLevel6()
-        {
-            MapLevel6 map = new MapLevel6();
-            LoadMapFromContainer(map);
-            map.Dispose();
-        }
+        //k dung den man 6
+        //private void CreateLevel6()
+        //{
+        //    MapLevel5 map = new MapLevel5();
+        //    LoadMapFromContainer(map);
+        //    map.Dispose();
+        //}
 
         // Hàm load màn chơi: dùng để reset lại toàn bộ dữ liệu khi cheat hoặc chọn màn
         private void LoadLevel(int level)
@@ -1544,7 +1546,7 @@ namespace LapTrinhTrucQuangProjectTest
                 case 3: CreateLevel3(); break;
                 case 4: CreateLevel4(); break;
                 case 5: CreateLevel5(); break;
-                case 6: CreateLevel6(); break;
+                //case 6: CreateLevel6(); break;
                 default: return; // Nếu số không hợp lệ thì thoát
             }
 
@@ -1567,6 +1569,22 @@ namespace LapTrinhTrucQuangProjectTest
         {
             base.OnPaint(e); // gọi hàm vẽ của Windows
             e.Graphics.ScaleTransform(scaleX, scaleY); // áp dụng tỷ lệ scale của hàm UpdateScale cho form, để các nét vẽ đều được scale theo tỷ lệ form
+
+            if (isLoading)
+            {
+                // Xóa sạch màu trắng cũ bằng màu đen
+                e.Graphics.Clear(Color.Black);
+
+                if (loadingBg != null)
+                {
+                    e.Graphics.DrawImage(loadingBg, 0, 0, baseWidth, baseHeight);
+                }
+
+                // Hiện thêm chữ Loading... cho chắc chắn
+                e.Graphics.DrawString("LOADING...", new Font("Arial", 12), Brushes.White, 10, 10);
+
+                return;
+            }
 
             // vẽ background:
             if (backgroundImg != null)

@@ -76,17 +76,17 @@
     <Compile Include="MapLevel4.Designer.cs">
       <DependentUpon>MapLevel4.cs</DependentUpon>
     </Compile>
+    <Compile Include="MapLevel5_Old.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MapLevel5_Old.Designer.cs">
+      <DependentUpon>MapLevel5_Old.cs</DependentUpon>
+    </Compile>
     <Compile Include="MapLevel5.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="MapLevel5.Designer.cs">
       <DependentUpon>MapLevel5.cs</DependentUpon>
-    </Compile>
-    <Compile Include="MapLevel6.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="MapLevel6.Designer.cs">
-      <DependentUpon>MapLevel6.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -105,11 +105,11 @@
     <EmbeddedResource Include="MapLevel4.resx">
       <DependentUpon>MapLevel4.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="MapLevel5_Old.resx">
+      <DependentUpon>MapLevel5_Old.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="MapLevel5.resx">
       <DependentUpon>MapLevel5.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MapLevel6.resx">
-      <DependentUpon>MapLevel6.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -442,6 +442,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\GameOverFont_2.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\loading_screen.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\platform.png">
