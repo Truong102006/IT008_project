@@ -97,5 +97,25 @@ namespace LapTrinhTrucQuangProjectTest
         {
 
         }
+
+        private void MapLevel3_Load_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void panel153_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void panel152_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void panel151_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
     }
 }

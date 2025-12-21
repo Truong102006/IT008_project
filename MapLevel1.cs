@@ -16,7 +16,7 @@ namespace LapTrinhTrucQuangProjectTest
         Bitmap backgroundImg; // biến chứa ảnh nền (GIF hoặc PNG đều được)
         Bitmap portal;        // Cổng dịch chuyển
         Bitmap gameOverImg;
-        bool goLeft, goRight, jumping, onGround, levelTransitioning;
+        bool goLeft, goRight,goUp,goDown, jumping, onGround, levelTransitioning;
         int jumpSpeed = 0, force = 20, gravity = 8, playerSpeed = 3, currentLevel = 1;
         int score = 0;
         int maxHealth = 100;     // Máu tối đa
@@ -24,6 +24,8 @@ namespace LapTrinhTrucQuangProjectTest
         bool isGameOver = false;
         bool isSubmerged = false;
         bool isCollected = false;
+        bool isClimbed = false;
+        bool secretSpawned = false; // Biến kiểm tra xem đã hiện coin bí mật chưa
         int startX;
         int startY;
 
@@ -45,6 +47,7 @@ namespace LapTrinhTrucQuangProjectTest
         List<Rectangle> coin1 = new List<Rectangle>();
         List<Rectangle> coin2 = new List<Rectangle>();
         List<Rectangle> coin3 = new List<Rectangle>();
+        List<Rectangle> coin4 = new List<Rectangle>();
 
         // List quản lý các chữ bay (hiệu ứng sát thương/ăn điểm)
         List<FloatingText> floatingTexts = new List<FloatingText>();
@@ -124,8 +127,8 @@ namespace LapTrinhTrucQuangProjectTest
 
                 foreach (var t in tiles)
                 {
-                    // Chỉ tính là vật thể rắn nếu tag không bắt đầu bằng "water_","deco_","trap_"
-                    if (!t.Type.StartsWith("water_") && !t.Type.StartsWith("deco_") && !t.Type.StartsWith("trap_"))
+                    // Chỉ tính là vật thể rắn nếu tag không bắt đầu bằng "water_","deco_","trap_","stair_"
+                    if (!t.Type.StartsWith("water_") && !t.Type.StartsWith("deco_") && !t.Type.StartsWith("trap_") && !t.Type.StartsWith("stair_"))
                     {
                         yield return t.Rect;
                     }
@@ -244,12 +247,16 @@ namespace LapTrinhTrucQuangProjectTest
         private readonly string CoinPath1 = @"Images\coin_1.png";
         private readonly string CoinPath2 = @"Images\coin_2.png";
         private readonly string CoinPath3 = @"Images\coin_3.png";
+        private readonly string CoinPath4 = @"Images\coin_4.png";
         private readonly string DecoPath1 = @"Images\deco_arrow.png";
         private readonly string DecoPath2 = @"Images\deco_7.png";
         private readonly string EnemyPath = @"Images\enemy.png";
         private readonly string BossPath = @"Images\boss.png";
         private readonly string TrapPath1 = @"Images\trap_3.png";
         private readonly string TrapPath2 = @"Images\trap_4.png";
+        private readonly string TrapPath3 = @"Images\trap_5.png";
+        private readonly string TrapPath4 = @"Images\trap_6.png";
+        private readonly string TrapPath5 = @"Images\trap_7.png";
 
         // Anim: tạo các đối tượng class SpriteAnim để quản lý hoạt ảnh
         SpriteAnim runAnim = new SpriteAnim { FPS = 10, Loop = true };
@@ -259,12 +266,16 @@ namespace LapTrinhTrucQuangProjectTest
         SpriteAnim coinAnim1 = new SpriteAnim { FPS = 9, Loop = true };
         SpriteAnim coinAnim2 = new SpriteAnim { FPS = 9, Loop = true };
         SpriteAnim coinAnim3 = new SpriteAnim { FPS = 9, Loop = true };
+        SpriteAnim coinAnim4 = new SpriteAnim { FPS = 7, Loop = true };
         SpriteAnim decoAnim1 = new SpriteAnim { FPS = 10, Loop = true };
         SpriteAnim decoAnim2 = new SpriteAnim { FPS = 10, Loop = true };
         SpriteAnim enemyAnim = new SpriteAnim { FPS = 8, Loop = true };
         SpriteAnim bossAnim = new SpriteAnim { FPS = 7, Loop = true };
         SpriteAnim trapAnim1 = new SpriteAnim { FPS = 20, Loop = true };
         SpriteAnim trapAnim2 = new SpriteAnim { FPS = 6, Loop = true };
+        SpriteAnim trapAnim3 = new SpriteAnim { FPS = 6, Loop = true };
+        SpriteAnim trapAnim4 = new SpriteAnim { FPS = 6, Loop = true };
+        SpriteAnim trapAnim5 = new SpriteAnim { FPS = 6, Loop = true };
 
         AnimState currentState = AnimState.Idle;
         SpriteAnim currentAnim;
@@ -333,12 +344,16 @@ namespace LapTrinhTrucQuangProjectTest
             LoadAnimationEven(CoinPath1, coinAnim1, 7, alphaThreshold: 16, tightenEdges: true);
             LoadAnimationEven(CoinPath2, coinAnim2, 7, alphaThreshold: 16, tightenEdges: true);
             LoadAnimationEven(CoinPath3, coinAnim3, 7, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(CoinPath4, coinAnim4, 4, alphaThreshold: 16, tightenEdges: true);
             LoadAnimationEven(DecoPath1, decoAnim1, 7, alphaThreshold: 16, tightenEdges: true);
             LoadAnimationEven(DecoPath2, decoAnim2, 13, alphaThreshold: 16, tightenEdges: true);
             LoadAnimationEven(EnemyPath, enemyAnim, 12, alphaThreshold: 16, tightenEdges: true);
             LoadAnimationEven(BossPath, bossAnim, 6, alphaThreshold: 16, tightenEdges: true);
             LoadAnimationEven(TrapPath1, trapAnim1, 8, alphaThreshold: 16, tightenEdges: true);
             LoadAnimationEven(TrapPath2, trapAnim2, 4, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(TrapPath3, trapAnim3, 6, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(TrapPath4, trapAnim4, 6, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(TrapPath5, trapAnim5, 6, alphaThreshold: 16, tightenEdges: true);
 
             currentAnim = idleAnim; currentAnim.Reset();
             gameTimer.Interval = 16;
@@ -355,13 +370,16 @@ namespace LapTrinhTrucQuangProjectTest
             UpdateScale();
             // XÓA: this.Shown += ... (Chỉ Form có)
             // this.Shown += (s, _) => UpdateScale();
-            for (int i = 1; i <= 60; i++)
+
+
+            // NẠP ẢNH CHO PANEL:
+            for (int i = 1; i <= 86; i++)
             {
                 AddTileImage("tile_" + i, "tile_" + i + ".png");
             }
-            for (int i = 1; i <= 17; i++)
+            for (int i = 1; i <= 68; i++)
             {
-                if (i != 7)
+                if (i != 7 && i != 53 && i != 65)
                 {
                     AddTileImage("deco_" + i, "deco_" + i + ".png");
                 }
@@ -382,7 +400,13 @@ namespace LapTrinhTrucQuangProjectTest
             {
                 AddTileImage("deco_arm" + i, "deco_arm" + i + ".png");
             }
+            for (int i = 1; i <= 3; i++)
+            {
+                AddTileImage("stair_" + i, "stair_" + i + ".png");
+            }
             AddTileImage("tile_invisible", "tile_invisible.png");
+            AddTileImage("deco_53", "deco_53.gif");
+            AddTileImage("deco_65", "deco_65.gif");
             AddTileImage("deco_bui5.1", "deco_bui5.1.png");
             AddTileImage("deco_bui5.2", "deco_bui5.2.png");
             AddTileImage("deco_bui5.3", "deco_bui5.3.png");
@@ -390,6 +414,9 @@ namespace LapTrinhTrucQuangProjectTest
             AddTileImage("water_2", "water4.gif");
             AddTileImage("water_3", "water5.gif");
             AddTileImage("water_4", "water6.gif");
+            AddTileImage("water_5", "water7.gif");
+
+
             try
             {
                 if (File.Exists(@"Images\platform.png"))
@@ -827,10 +854,11 @@ namespace LapTrinhTrucQuangProjectTest
                     }
                 }
             }
-            // Xử lí tương tác với trap và water:
+            // Xử lí tương tác với trap,stair và water:
             bool hitTrap = false;
             isSubmerged = false; // Reset trạng thái nước mỗi khung hình
             isCollected = false; // Reset trạng thái nhặt coin mỗi khung hình
+            isClimbed = false; // Reset trạng thái leo cầu thang mỗi khung hình
 
             foreach (var t in tiles)
             {
@@ -839,6 +867,29 @@ namespace LapTrinhTrucQuangProjectTest
                     if (playerHitbox.IntersectsWith(t.Rect))
                     {
                         isSubmerged = true; // Bật trạng thái: Đang ở trong nước
+                    }
+                }
+                if (t.Type.StartsWith("stair_"))
+                {
+                    if (playerHitbox.IntersectsWith(t.Rect))
+                    {
+                        // Nếu đáy hitbox nhân vật chạm đỉnh thang (cách 10px) -> Tự động nảy lên
+                        if (player.Bottom <= t.Rect.Top + 10)
+                        {
+                            // Quan trọng: Tắt trạng thái leo để trọng lực hoạt động lại
+                            isClimbed = false;
+
+                            jumping = true;
+                            onGround = false;
+                            jumpSpeed = 15;
+
+                            
+                        }
+                        else
+                        {
+                            // Nếu chưa tới đỉnh -> Bật trạng thái leo
+                            isClimbed = true;
+                        }
                     }
                 }
                 if (t.Type.StartsWith("trap_"))
@@ -910,9 +961,19 @@ namespace LapTrinhTrucQuangProjectTest
                 }
             }
 
+            if (isClimbed)
+            {                
+                // Reset các trạng thái nhảy/rơi tự do để nhân vật bám dính vào cầu thang
+                jumping = false;
+                jumpSpeed = 0;
+                // Kéo lên trên 
+                if (goUp) player.Y -= 3;
+                if (goDown) player.Y += 3;
+            }
+
             // Nhảy + trọng lực: giải quyết chạm trần
             if (jumping) { player.Y -= jumpSpeed; jumpSpeed -= 1; }
-            if (!onGround)
+            if (!onGround && !isClimbed)
             {
                 int currentGravity = isSubmerged ? 2 : gravity; // Ở dưới nước rơi chậm hơn
                 player.Y += currentGravity;
@@ -1024,8 +1085,7 @@ namespace LapTrinhTrucQuangProjectTest
 
                 if (crossedTop || keepStick) // nếu nhân vật đang đáp đất hoặc đang dính vào đất
                 {
-                    // ghim sao cho coll.Bottom = p.Top:
-
+                    // ghim sao cho coll.Bottom = p.Top:                    
                     player.Y = p.Top - (coll.Height + HB_TOP);
                     // ta có: player.Y = coll.Bottom - (coll.Height + HB_TOP) nghĩa là đỉnh nhân vật = đáy hitbox đi lên một khoảng bằng chiều cao tổng thể
                     // nên muốn vị trí coll.Bottom = p.Top, ta phải làm cho đỉnh của nhân vật, tức là player.Y = p.Top - (coll.Height + HB_TOP)
@@ -1033,12 +1093,11 @@ namespace LapTrinhTrucQuangProjectTest
                     // từ đó ta có được coll.Bottom hay chân của hitbox sẽ ngang hàng với đỉnh của mặt phẳng hay p.Top
 
                     coll = GetCollRect(player, facingRight);
-                    //tính toán lại hitbox lần cuối, sử dụng vị trí player.Y mới
-
-                    onGround = true; // đã chạm đất vì đang đứng trên platform
-                    groundedIndex = i; // ghi lại vị trí bệ đang đứng dùng cho keepStick cho frame tiếp theo
-                    jumping = false;
-                    jumpSpeed = 0;
+                    //tính toán lại hitbox lần cuối, sử dụng vị trí player.Y mới                   
+                        onGround = true; // đã chạm đất vì đang đứng trên platform
+                        groundedIndex = i; // ghi lại vị trí bệ đang đứng dùng cho keepStick cho frame tiếp theo
+                        jumping = false;
+                        jumpSpeed = 0;
                     // triệt tiêu toàn bộ lực nhảy và trạng thái nhảy vì đã tiếp đất thành công
                     break;
                     // không kiểm tra các platform khác nữa vì đã tìm thấy platform tiếp đất thành công
@@ -1103,7 +1162,7 @@ namespace LapTrinhTrucQuangProjectTest
                 jumpSpeed = 0;
             }
 
-            // Coin: (Xử lý cho 3 loại coin khác nhau)
+            // Coin: (Xử lý cho 4 loại coin khác nhau)
             for (int i = coin1.Count - 1; i >= 0; i--)
             {
                 if (coll.IntersectsWith(coin1[i]) && isCollected == false)
@@ -1124,7 +1183,6 @@ namespace LapTrinhTrucQuangProjectTest
                     coin2.RemoveAt(i);
                 }
             }
-
             for (int i = coin3.Count - 1; i >= 0; i--)
             {
                 if (coll.IntersectsWith(coin3[i]) && isCollected == false)
@@ -1133,6 +1191,32 @@ namespace LapTrinhTrucQuangProjectTest
                     score += 10;
                     AddFloatingText("SECRET!! +10", coin3[i].X, coin3[i].Y, Color.Crimson); // Hiện chữ bí mật
                     coin3.RemoveAt(i);
+                }
+            }
+            for (int i = coin4.Count - 1; i >= 0; i--)
+            {
+                if (coll.IntersectsWith(coin4[i]) && isCollected == false)
+                {
+                    isCollected = true;
+                    jumping = true;
+                    onGround = false;
+                    jumpSpeed = 23;
+                    AddFloatingText("UP!!!", coin4[i].X, coin4[i].Y, Color.Pink); // Hiện chữ UP
+                    coin4.RemoveAt(i);
+                    if (coin4.Count == 1 && secretSpawned == false) // khi đã ăn hết coin4 thì chạy đoạn code sau:
+                    {
+                        secretSpawned = true;
+                        int spawnX = 0; int spawnY = 0; // vị trí xuất hiện coin4 secret
+                        if (currentLevel == 3)
+                        {
+                            spawnX = 320;
+                            spawnY = 290;
+                        }
+                        coin4.Add(new Rectangle(spawnX, spawnY, 32, 32)); // tạo coin4 tại tọa độ cần thiết để qua màn
+                        AddFloatingText("SECRET APPEARED!!", spawnX, spawnY, Color.Pink);
+                        coin4.Add(new Rectangle(500, 420, 32, 32)); // tạo thêm coin4 khác tại tọa đô nếu cần
+                        AddFloatingText("SECRET APPEARED!!", 530, 420, Color.Pink);
+                    }
                 }
             }
 
@@ -1178,11 +1262,15 @@ namespace LapTrinhTrucQuangProjectTest
             coinAnim1.Update(dt);
             coinAnim2.Update(dt);
             coinAnim3.Update(dt);
+            coinAnim4.Update(dt);
             // gọi hàm tương tự cho animation cửa qua màn và các loại coin trong game
             decoAnim1.Update(dt);
             decoAnim2.Update(dt);
             trapAnim1.Update(dt);
             trapAnim2.Update(dt);
+            trapAnim3.Update(dt);
+            trapAnim4.Update(dt);
+            trapAnim5.Update(dt);
             enemyAnim.Update(dt);
             bossAnim.Update(dt);
 
@@ -1223,15 +1311,26 @@ namespace LapTrinhTrucQuangProjectTest
             if (e.KeyCode == Keys.A) goLeft = true;
             if (e.KeyCode == Keys.D) goRight = true;
 
-            if (e.KeyCode == Keys.W && !jumping) // !jumping đảm bảo chỉ cho phép nhảy khi nhân vật không đang trong trạng thái nhảy sẵn
+            if (e.KeyCode == Keys.W)
             {
-                if (onGround || IsTouchingPlatformBelow()) // khi nhân vật đang onGround hoặc IsTouchingPLatFormBelow() là true tức là chân nhân vật vừa chạm một platform -> cho phép nhảy ngay sau khi chạm đất
+                if (isClimbed)
                 {
-                    jumping = true;
-                    jumpSpeed = force;
-                    onGround = false;
+                    // Nếu đang leo thang -> W là đi lên
+                    goUp = true;
+                }
+                else if (!jumping) // !jumping đảm bảo chỉ cho phép nhảy khi nhân vật không đang trong trạng thái nhảy sẵn
+                {
+                    // Nếu KHÔNG leo thang -> W là nhảy 
+                    if (onGround || IsTouchingPlatformBelow()) // khi nhân vật đang onGround hoặc IsTouchingPLatFormBelow() là true tức là chân nhân vật vừa chạm một platform -> cho phép nhảy ngay sau khi chạm đất
+                    {
+                        jumping = true;
+                        jumpSpeed = force;
+                        onGround = false;
+                    }
                 }
             }
+            // Thêm nút S để đi xuống
+            if (e.KeyCode == Keys.S) goDown = true;
 
             // bấm nút i thì sẽ chuyển tới màn thứ i ( khi xong game sẽ xóa tính năng này )
             for (int i = 1; i <= 6; i++)
@@ -1252,8 +1351,11 @@ namespace LapTrinhTrucQuangProjectTest
 
         private void KeyIsUp(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Left || e.KeyCode == Keys.A) goLeft = false;
-            if (e.KeyCode == Keys.Right || e.KeyCode == Keys.D) goRight = false;
+            if (e.KeyCode == Keys.A) goLeft = false;
+            if (e.KeyCode == Keys.D) goRight = false;
+            if (e.KeyCode == Keys.W) goUp = false;
+            if (e.KeyCode == Keys.S) goDown = false;
+
         }
 
         private bool IsTouchingPlatformBelow()
@@ -1309,6 +1411,7 @@ namespace LapTrinhTrucQuangProjectTest
             coin1.Clear();
             coin2.Clear();
             coin3.Clear();
+            coin4.Clear();
             // SỬ DỤNG container.Controls
             foreach (Control c in container.Controls)
             {
@@ -1319,7 +1422,7 @@ namespace LapTrinhTrucQuangProjectTest
                     platforms.Add(new Rectangle(c.Left, c.Top, c.Width, c.Height));
                     c.Visible = false;
                 }
-                if (tag != null && (tag.StartsWith("tile_") || tag.StartsWith("trap_") || tag.StartsWith("water_") || tag.StartsWith("deco_")))
+                if (tag != null && (tag.StartsWith("tile_") || tag.StartsWith("trap_") || tag.StartsWith("water_") || tag.StartsWith("deco_") || tag.StartsWith("stair_")))
                 {
                     tiles.Add(new Tile(c.Left, c.Top, c.Width, c.Height, tag));
                     c.Visible = false;
@@ -1342,6 +1445,11 @@ namespace LapTrinhTrucQuangProjectTest
                 if (tag != null && tag.StartsWith("coin_3"))
                 {
                     coin3.Add(new Rectangle(c.Left, c.Top, c.Width, c.Height));
+                    c.Visible = false;
+                }
+                if (tag != null && tag.StartsWith("coin_4"))
+                {
+                    coin4.Add(new Rectangle(c.Left, c.Top, c.Width, c.Height));
                     c.Visible = false;
                 }
                 if (tag == "player")
@@ -1424,7 +1532,8 @@ namespace LapTrinhTrucQuangProjectTest
             platforms.Clear();
             tiles.Clear();
             enemies.Clear();
-            coin1.Clear(); coin2.Clear(); coin3.Clear();
+            coin1.Clear(); coin2.Clear(); coin3.Clear(); coin4.Clear();
+            secretSpawned = false;
             // clear các list khác nếu có 
 
             // 2. Gọi hàm tạo màn tương ứng
@@ -1508,6 +1617,9 @@ namespace LapTrinhTrucQuangProjectTest
                 // Các hiệu ứng đặc biệt cho trap và deco cụ thể
                 if (t.Type == "trap_3") { trapAnim1.Draw(e.Graphics, t.Rect, false); continue; }
                 if (t.Type == "trap_4") { trapAnim2.Draw(e.Graphics, t.Rect, false); continue; }
+                if (t.Type == "trap_5") { trapAnim3.Draw(e.Graphics, t.Rect, false); continue; }
+                if (t.Type == "trap_6") { trapAnim4.Draw(e.Graphics, t.Rect, false); continue; }
+                if (t.Type == "trap_7") { trapAnim5.Draw(e.Graphics, t.Rect, false); continue; }
                 if (t.Type == "deco_arrow") { decoAnim1.Draw(e.Graphics, t.Rect, false); continue; }
                 if (t.Type == "deco_7") { decoAnim2.Draw(e.Graphics, t.Rect, false); continue; }
 
@@ -1562,6 +1674,17 @@ namespace LapTrinhTrucQuangProjectTest
                 if (coinAnim3.Sheet != null)
                 {
                     coinAnim3.Draw(e.Graphics, c, true);
+                }
+                else
+                {
+                    e.Graphics.FillRectangle(Brushes.Gold, c);
+                }
+            }
+            foreach (var c in coin4)
+            {
+                if (coinAnim4.Sheet != null)
+                {
+                    coinAnim4.Draw(e.Graphics, c, true);
                 }
                 else
                 {

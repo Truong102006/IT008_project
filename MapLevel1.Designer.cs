@@ -339,7 +339,7 @@
             this.panel111.Name = "panel111";
             this.panel111.Size = new System.Drawing.Size(915, 80);
             this.panel111.TabIndex = 61;
-            this.panel111.Tag = "water_3";
+            this.panel111.Tag = "water_2";
             // 
             // panel30
             // 
