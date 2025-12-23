@@ -701,7 +701,7 @@ namespace LapTrinhTrucQuangProjectTest
                 case 2: CreateLevel2(); break;
                 case 3: CreateLevel3(); break;
                 case 4: CreateLevel4(); break;
-                case 5: CreateLevel5(); break;
+                //case 5: CreateLevel5(); break;
                 //case 6: CreateLevel6(); break;
                 default: CreateLevel1(); break;
             }
@@ -1335,7 +1335,7 @@ namespace LapTrinhTrucQuangProjectTest
             if (e.KeyCode == Keys.S) goDown = true;
 
             // bấm nút i thì sẽ chuyển tới màn thứ i ( khi xong game sẽ xóa tính năng này )
-            for (int i = 1; i <= 5; i++)
+            for (int i = 1; i <= 4; i++)
             {
                 Keys key = (Keys)((int)Keys.D0 + i);
                 if (e.KeyCode == key)
@@ -1389,7 +1389,7 @@ namespace LapTrinhTrucQuangProjectTest
         private void NextLevel()
         {
             currentLevel++;
-            if (currentLevel > 5) { gameTimer.Stop(); MessageBox.Show("🎉 Bạn đã hoàn thành tất cả các màn!"); ; return; }
+            if (currentLevel > 4) { gameTimer.Stop(); MessageBox.Show("🎉 Bạn đã hoàn thành tất cả các màn!"); ; return; }
             platforms.Clear();
             // xóa hết dữ liệu platform của màn chơi cũ khỏi bộ nhớ
             switch (currentLevel)
@@ -1397,7 +1397,7 @@ namespace LapTrinhTrucQuangProjectTest
                 case 2: CreateLevel2(); break;
                 case 3: CreateLevel3(); break;
                 case 4: CreateLevel4(); break;
-                case 5: CreateLevel5(); break;
+                //case 5: CreateLevel5(); break;
                 //case 6: CreateLevel6(); break;
             }
             levelTransitioning = false;
@@ -1513,12 +1513,12 @@ namespace LapTrinhTrucQuangProjectTest
             LoadMapFromContainer(map);
             map.Dispose();
         }
-        private void CreateLevel5()
-        {
-            MapLevel5 map = new MapLevel5();
-            LoadMapFromContainer(map);
-            map.Dispose();
-        }
+        //private void CreateLevel5()
+        //{
+        //    MapLevel4 map = new MapLevel4();
+        //    LoadMapFromContainer(map);
+        //    map.Dispose();
+        //}
         //k dung den man 6
         //private void CreateLevel6()
         //{
@@ -1545,7 +1545,7 @@ namespace LapTrinhTrucQuangProjectTest
                 case 2: CreateLevel2(); break;
                 case 3: CreateLevel3(); break;
                 case 4: CreateLevel4(); break;
-                case 5: CreateLevel5(); break;
+                //case 5: CreateLevel5(); break;
                 //case 6: CreateLevel6(); break;
                 default: return; // Nếu số không hợp lệ thì thoát
             }

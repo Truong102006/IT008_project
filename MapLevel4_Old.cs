@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace LapTrinhTrucQuangProjectTest
 {
-    public partial class MapLevel5 : UserControl
+    public partial class MapLevel4_Old : UserControl
     {
         private Size _originalFormSize;
         private Rectangle _orgMenuRect;
@@ -22,12 +22,12 @@ namespace LapTrinhTrucQuangProjectTest
         private Rectangle _orgResetRect;
         private float _orgResetFontSize;
         private bool isPaused = false;
-        public MapLevel5()
+        public MapLevel4_Old()
         {
             InitializeComponent();
         }
 
-        private void MapLevel6_Load(object sender, EventArgs e)
+        private void MapLevel4_Load(object sender, EventArgs e)
         {
             _originalFormSize = this.ClientSize;
 
@@ -55,7 +55,7 @@ namespace LapTrinhTrucQuangProjectTest
                 _orgResetFontSize = btnReset.Font.Size;
             }
         }
-        private void MapLevel6_Resize(object sender, EventArgs e)
+        private void MapLevel4_Resize(object sender, EventArgs e)
         {
             float xRatio = (float)this.ClientSize.Width / _originalFormSize.Width;
             float yRatio = (float)this.ClientSize.Height / _originalFormSize.Height;
@@ -94,10 +94,6 @@ namespace LapTrinhTrucQuangProjectTest
 
         }
         protected override void OnPaint(PaintEventArgs e)
-        {
-
-        }
-        private void panel3_Paint(object sender, PaintEventArgs e)
         {
 
         }
