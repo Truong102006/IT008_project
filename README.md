@@ -42,5 +42,5 @@ Dựa trên cấu trúc code, dự án bao gồm các tính năng:
 | MSSV | Họ và tên | Vai trò |
 | :--- | :--- | :--- |
 | **24521310** | **Nguyễn Thành Phát** | Code Main Menu, nút bấm, code logic game, thiết kế  |
-| **24521605** | **Lê Trần Quang ** | Phát triển ý tưởng design, code logic game, thiết kế UI |
+| **24521605** | **Lê Trần Quang Thắng** | Phát triển ý tưởng design, code logic game, thiết kế UI |
 | **24521900** | **Tô Quang Trường** | Trưởng nhóm, Thiết kế UI, code logic game |
