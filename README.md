@@ -9,7 +9,7 @@
 ---
 
 ## 📸 Hình ảnh Demo
-> *Sẽ update sau*
+> *Sẽ update sau ( Vì đồ án vẫn đang trong quá trình hoàn thiện)*
 
 ---
 
