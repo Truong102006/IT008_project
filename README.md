@@ -20,7 +20,7 @@ Dựa trên cấu trúc code, dự án bao gồm các tính năng:
 - [x] **Màn chơi Boss:** Map cuối (`MapLevel4`) với độ khó đặc biệt.
 - [x] **Cơ chế Game:** - Hệ thống bẫy (`trap`) và vật phẩm thu thập (`coin`).
   - Màn hình chờ (`loading_screen`) khi chuyển cảnh.
-- [x] **Tính năng bổ trợ:** Hỗ trợ phím tắt (phím F bật full màn hình, Esc để thoát).
+- [x] **Tính năng bổ trợ:** Hỗ trợ phím tắt (phím F bật full màn hình).
 
 ---
 
