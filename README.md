@@ -52,7 +52,6 @@ Dựa trên cấu trúc code, dự án bao gồm các tính năng:
 1. **Tải về:** Nhấn nút `Code` -> `Download ZIP`.
 2. **Mở Project:** Mở file `LapTrinhTrucQuangProjectTest.sln` bằng Visual Studio 2022.
 3. **Chạy:** Nhấn `F5` để xem các màn chơi đã hoàn thiện.
-*(Lưu ý: Đồ án đang trong quá trình phát triển các màn chơi cuối).*
 
 ## 👥 Thành viên thực hiện
 | MSSV | Họ và tên | Vai trò |
