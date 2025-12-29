@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.IO;
 using System.Windows.Forms;
 
@@ -129,6 +130,13 @@ namespace LapTrinhTrucQuangProjectTest
             // Chúng ta kiểm tra btnNewGame như một đại diện
             if (btnNewGame != null && btnNewGame.Visible && _backgroundImage != null)
             {
+                // --- Cấu hình giúp hình ảnh sắc nét hơn ---
+                e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                e.Graphics.SmoothingMode = SmoothingMode.HighQuality;
+                e.Graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                e.Graphics.CompositingQuality = CompositingQuality.HighQuality;
+
+                // Vẽ hình nền phủ kín ClientRectangle
                 e.Graphics.DrawImage(_backgroundImage, this.ClientRectangle);
             }
         }

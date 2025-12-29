@@ -335,9 +335,9 @@
             // panel111
             // 
             this.panel111.BackColor = System.Drawing.Color.SaddleBrown;
-            this.panel111.Location = new System.Drawing.Point(172, 549);
+            this.panel111.Location = new System.Drawing.Point(216, 549);
             this.panel111.Name = "panel111";
-            this.panel111.Size = new System.Drawing.Size(915, 80);
+            this.panel111.Size = new System.Drawing.Size(871, 80);
             this.panel111.TabIndex = 61;
             this.panel111.Tag = "water_2";
             // 
@@ -519,7 +519,7 @@
             this.panel78.Name = "panel78";
             this.panel78.Size = new System.Drawing.Size(45, 36);
             this.panel78.TabIndex = 30;
-            this.panel78.Tag = "tile_29";
+            this.panel78.Tag = "tile_23";
             // 
             // panel102
             // 
@@ -1000,7 +1000,7 @@
             // 
             // panel6
             // 
-            this.panel6.Location = new System.Drawing.Point(491, 206);
+            this.panel6.Location = new System.Drawing.Point(0, 315);
             this.panel6.Name = "panel6";
             this.panel6.Size = new System.Drawing.Size(40, 40);
             this.panel6.TabIndex = 17;
@@ -1492,7 +1492,7 @@
             this.btnHome.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
             this.btnHome.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
             this.btnHome.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnHome.Location = new System.Drawing.Point(1010, 5);
+            this.btnHome.Location = new System.Drawing.Point(8, 61);
             this.btnHome.Name = "btnHome";
             this.btnHome.Size = new System.Drawing.Size(50, 50);
             this.btnHome.TabIndex = 115;
@@ -1509,7 +1509,7 @@
             this.btnMenu.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
             this.btnMenu.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
             this.btnMenu.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnMenu.Location = new System.Drawing.Point(950, 5);
+            this.btnMenu.Location = new System.Drawing.Point(8, 5);
             this.btnMenu.Name = "btnMenu";
             this.btnMenu.Size = new System.Drawing.Size(50, 50);
             this.btnMenu.TabIndex = 0;
@@ -1545,7 +1545,6 @@
             this.Controls.Add(this.btnContinue);
             this.Controls.Add(this.btnHome);
             this.Controls.Add(this.btnMenu);
-            this.Controls.Add(this.panel111);
             this.Controls.Add(this.panel15);
             this.Controls.Add(this.panel14);
             this.Controls.Add(this.panel117);
@@ -1689,6 +1688,7 @@
             this.Controls.Add(this.panel6);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.panel145);
+            this.Controls.Add(this.panel111);
             this.Name = "MapLevel1";
             this.Size = new System.Drawing.Size(1087, 607);
             this.Load += new System.EventHandler(this.MapLevel1_Load_1);

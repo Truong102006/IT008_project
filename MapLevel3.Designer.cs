@@ -308,7 +308,7 @@
             this.btnHome.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
             this.btnHome.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
             this.btnHome.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnHome.Location = new System.Drawing.Point(1010, 5);
+            this.btnHome.Location = new System.Drawing.Point(10, 62);
             this.btnHome.Name = "btnHome";
             this.btnHome.Size = new System.Drawing.Size(50, 50);
             this.btnHome.TabIndex = 117;
@@ -325,7 +325,7 @@
             this.btnMenu.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
             this.btnMenu.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
             this.btnMenu.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnMenu.Location = new System.Drawing.Point(950, 5);
+            this.btnMenu.Location = new System.Drawing.Point(10, 7);
             this.btnMenu.Name = "btnMenu";
             this.btnMenu.Size = new System.Drawing.Size(50, 50);
             this.btnMenu.TabIndex = 118;
@@ -342,7 +342,7 @@
             this.btnContinue.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
             this.btnContinue.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
             this.btnContinue.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnContinue.Location = new System.Drawing.Point(744, 5);
+            this.btnContinue.Location = new System.Drawing.Point(430, 170);
             this.btnContinue.Name = "btnContinue";
             this.btnContinue.Size = new System.Drawing.Size(200, 50);
             this.btnContinue.TabIndex = 119;
@@ -360,7 +360,7 @@
             this.btnReset.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
             this.btnReset.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
             this.btnReset.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnReset.Location = new System.Drawing.Point(950, 48);
+            this.btnReset.Location = new System.Drawing.Point(430, 270);
             this.btnReset.Name = "btnReset";
             this.btnReset.Size = new System.Drawing.Size(200, 50);
             this.btnReset.TabIndex = 120;
@@ -471,7 +471,7 @@
             // 
             // panel8
             // 
-            this.panel8.Location = new System.Drawing.Point(258, 209);
+            this.panel8.Location = new System.Drawing.Point(0, 193);
             this.panel8.Name = "panel8";
             this.panel8.Size = new System.Drawing.Size(40, 40);
             this.panel8.TabIndex = 131;
@@ -605,7 +605,7 @@
             // 
             this.panel33.BackColor = System.Drawing.Color.SaddleBrown;
             this.panel33.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.panel33.Location = new System.Drawing.Point(108, 338);
+            this.panel33.Location = new System.Drawing.Point(108, 337);
             this.panel33.Name = "panel33";
             this.panel33.Size = new System.Drawing.Size(45, 36);
             this.panel33.TabIndex = 128;
@@ -615,7 +615,7 @@
             // 
             this.panel34.BackColor = System.Drawing.Color.SaddleBrown;
             this.panel34.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.panel34.Location = new System.Drawing.Point(108, 373);
+            this.panel34.Location = new System.Drawing.Point(108, 372);
             this.panel34.Name = "panel34";
             this.panel34.Size = new System.Drawing.Size(45, 36);
             this.panel34.TabIndex = 128;
@@ -625,7 +625,7 @@
             // 
             this.panel35.BackColor = System.Drawing.Color.SaddleBrown;
             this.panel35.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.panel35.Location = new System.Drawing.Point(108, 408);
+            this.panel35.Location = new System.Drawing.Point(108, 407);
             this.panel35.Name = "panel35";
             this.panel35.Size = new System.Drawing.Size(45, 36);
             this.panel35.TabIndex = 128;

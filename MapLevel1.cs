@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
@@ -15,6 +16,7 @@ namespace LapTrinhTrucQuangProjectTest
         Bitmap platformImg;
         Bitmap backgroundImg; // biến chứa ảnh nền (GIF hoặc PNG đều được)
         Bitmap portal;        // Cổng dịch chuyển
+        Bitmap staticLayer; // Chứa ảnh của toàn bộ ảnh tĩnh, biến này dùng để vẽ những ảnh tĩnh lên một mảng cố định, không vẽ lại mỗi khung hình, tránh lag
         Bitmap gameOverImg;
         bool isLoading = true; // Mặc định là true khi vừa mở game
         Bitmap loadingBg;      // Biến chứa ảnh nền màn hình chờ
@@ -50,7 +52,7 @@ namespace LapTrinhTrucQuangProjectTest
         List<Rectangle> coin2 = new List<Rectangle>();
         List<Rectangle> coin3 = new List<Rectangle>();
         List<Rectangle> coin4 = new List<Rectangle>();
-
+        List<Rectangle> coin5 = new List<Rectangle>();
         // List quản lý các chữ bay (hiệu ứng sát thương/ăn điểm)
         List<FloatingText> floatingTexts = new List<FloatingText>();
 
@@ -216,6 +218,34 @@ namespace LapTrinhTrucQuangProjectTest
             }
         }
 
+
+        private void RenderStaticLayer()
+        {
+            // 1. Tạo một tấm ảnh trắng to bằng kích thước màn chơi
+            if (staticLayer != null) staticLayer.Dispose(); // nếu không có ảnh tĩnh thì thoát
+            staticLayer = new Bitmap(baseWidth, baseHeight);
+
+            // 2. Dùng Graphics để vẽ lên tấm ảnh đó
+            using (Graphics g = Graphics.FromImage(staticLayer))
+            {
+                // 2 dòng dưới đây để làm cho ảnh không mờ
+                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+                g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
+
+                foreach (var t in tiles)
+                {
+                    // CHỈ VẼ CÁC TILE TĨNH
+                    if (!t.Type.StartsWith("water_") && t.Type != "trap_3" && t.Type != "trap_4" && t.Type != "trap_ 5" && t.Type != "trap_6" && t.Type != "trap_7" && t.Type != "deco_arrow" && t.Type != "deco_7" && t.Type != "deco_53" && t.Type != "deco_65" && t.Type != "deco_69" && t.Type != "deco_74" && t.Type != "deco_75" && t.Type != "deco_76") 
+                    {
+                        if (tileAssets.ContainsKey(t.Type))
+                        {
+                            g.DrawImage(tileAssets[t.Type], t.Rect);
+                        }
+                    }
+                }
+            }
+        }
+
         // Hàm AddTileImage() dùng để thêm ảnh vào cho các ô tilesets để thiết kế map
         private void AddTileImage(string tag, string fileName)
         {
@@ -250,8 +280,12 @@ namespace LapTrinhTrucQuangProjectTest
         private readonly string CoinPath2 = @"Images\coin_2.png";
         private readonly string CoinPath3 = @"Images\coin_3.png";
         private readonly string CoinPath4 = @"Images\coin_4.png";
+        private readonly string CoinPath5 = @"Images\coin_5.png";
         private readonly string DecoPath1 = @"Images\deco_arrow.png";
         private readonly string DecoPath2 = @"Images\deco_7.png";
+        private readonly string DecoPath3 = @"Images\deco_74.png";
+        private readonly string DecoPath4 = @"Images\deco_75.png";
+        private readonly string DecoPath5 = @"Images\deco_76.png";
         private readonly string EnemyPath = @"Images\enemy.png";
         private readonly string BossPath = @"Images\boss.png";
         private readonly string TrapPath1 = @"Images\trap_3.png";
@@ -269,8 +303,12 @@ namespace LapTrinhTrucQuangProjectTest
         SpriteAnim coinAnim2 = new SpriteAnim { FPS = 9, Loop = true };
         SpriteAnim coinAnim3 = new SpriteAnim { FPS = 9, Loop = true };
         SpriteAnim coinAnim4 = new SpriteAnim { FPS = 7, Loop = true };
+        SpriteAnim coinAnim5 = new SpriteAnim { FPS = 9, Loop = true };
         SpriteAnim decoAnim1 = new SpriteAnim { FPS = 10, Loop = true };
         SpriteAnim decoAnim2 = new SpriteAnim { FPS = 10, Loop = true };
+        SpriteAnim decoAnim3 = new SpriteAnim { FPS = 4, Loop = true };
+        SpriteAnim decoAnim4 = new SpriteAnim { FPS = 4, Loop = true };
+        SpriteAnim decoAnim5 = new SpriteAnim { FPS = 4, Loop = true };
         SpriteAnim enemyAnim = new SpriteAnim { FPS = 8, Loop = true };
         SpriteAnim bossAnim = new SpriteAnim { FPS = 7, Loop = true };
         SpriteAnim trapAnim1 = new SpriteAnim { FPS = 20, Loop = true };
@@ -289,13 +327,30 @@ namespace LapTrinhTrucQuangProjectTest
         {
             InitializeComponent();
             // Nạp ảnh chờ NGAY LẬP TỨC trước khi làm các việc khác
+
+            //ẨN PANEL MÀU NÂU NGAY LẬP TỨC
+            foreach (Control c in this.Controls)
+            {
+                // Kiểm tra nếu nó là vật thể game (có Tag) thì ẩn ngay
+                if (c.Tag != null)
+                {
+                    string t = c.Tag.ToString();
+                    if (t.StartsWith("tile_") || t.StartsWith("deco_") ||
+                        t.StartsWith("trap_") || t.StartsWith("water_") ||
+                        t.StartsWith("stair_") || t.StartsWith("coin_") ||
+                        t == "platform" || t == "player" || t == "enemy" || t == "boss" || t == "door")
+                    {
+                        c.Visible = false; // Ẩn ngay, không chờ LoadMap chạy
+                    }
+                }
+
+            }
             try
             {
                 if (File.Exists(@"Images\loading_screen.png"))
                     loadingBg = (Bitmap)Image.FromFile(@"Images\loading_screen.png");
             }
             catch { /* Xử lý nếu file lỗi */ }
-            CreateLevel1(); // nạp màn 1
             // Gắn sự kiện Load vào hàm khởi tạo game
             this.Load += MapLevel1_Load;
             // Gắn sự kiện Resize của UserControl
@@ -338,7 +393,7 @@ namespace LapTrinhTrucQuangProjectTest
                 _orgResetFontSize = btnReset.Font.Size;
             }
 
-
+            
             currentAnim = idleAnim; currentAnim.Reset();
             gameTimer.Interval = 16;
             gameTimer.Tick += GameLoop;
@@ -356,11 +411,17 @@ namespace LapTrinhTrucQuangProjectTest
             // this.Shown += (s, _) => UpdateScale();
             // TẠO ĐỘ TRỄ ĐỂ HIỆN ẢNH LOADING TRƯỚC
             Timer delayLoader = new Timer();
-            delayLoader.Interval = 100; // Đợi 0.1 giây
+            delayLoader.Interval = 100;
             delayLoader.Tick += (s, ev) => {
                 delayLoader.Stop();
-                FinishLoadingAssets(); // Gọi hàm nạp ảnh nặng ở trên
-                delayLoader.Dispose(); // Giải phóng timer tạm này sau khi dùng xong
+
+                // Bước 1: Nạp tất cả hình ảnh vào bộ nhớ trước
+                FinishLoadingAssets();
+
+                // Bước 2: Sau khi có ảnh rồi mới tạo Map và vẽ StaticLayer
+                CreateLevel1();
+
+                delayLoader.Dispose();
             };
             delayLoader.Start();
         }
@@ -384,8 +445,12 @@ namespace LapTrinhTrucQuangProjectTest
             LoadAnimationEven(CoinPath2, coinAnim2, 7, alphaThreshold: 16, tightenEdges: true);
             LoadAnimationEven(CoinPath3, coinAnim3, 7, alphaThreshold: 16, tightenEdges: true);
             LoadAnimationEven(CoinPath4, coinAnim4, 4, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(CoinPath5, coinAnim5, 7, alphaThreshold: 16, tightenEdges: true);
             LoadAnimationEven(DecoPath1, decoAnim1, 7, alphaThreshold: 16, tightenEdges: true);
             LoadAnimationEven(DecoPath2, decoAnim2, 13, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(DecoPath3, decoAnim3, 6, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(DecoPath4, decoAnim4, 6, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(DecoPath5, decoAnim5, 6, alphaThreshold: 16, tightenEdges: true);
             LoadAnimationEven(EnemyPath, enemyAnim, 12, alphaThreshold: 16, tightenEdges: true);
             LoadAnimationEven(BossPath, bossAnim, 6, alphaThreshold: 16, tightenEdges: true);
             LoadAnimationEven(TrapPath1, trapAnim1, 8, alphaThreshold: 16, tightenEdges: true);
@@ -395,8 +460,8 @@ namespace LapTrinhTrucQuangProjectTest
             LoadAnimationEven(TrapPath5, trapAnim5, 6, alphaThreshold: 16, tightenEdges: true);
 
             // NẠP ẢNH CHO PANEL (Vòng lặp for)
-            for (int i = 1; i <= 86; i++) { AddTileImage("tile_" + i, "tile_" + i + ".png"); }
-            for (int i = 1; i <= 68; i++) { if (i != 7 && i != 53 && i != 65) AddTileImage("deco_" + i, "deco_" + i + ".png"); }
+            for (int i = 1; i <= 91; i++) { AddTileImage("tile_" + i, "tile_" + i + ".png"); }
+            for (int i = 1; i <= 79; i++) { if (i != 7 && i != 53 && i != 65 && i != 69 && i != 74 && i != 75 && i != 76) AddTileImage("deco_" + i, "deco_" + i + ".png"); }
             for (int i = 1; i <= 4; i++) { AddTileImage("deco_bui" + i, "deco_bui" + i + ".png"); }
             for (int i = 1; i <= 3; i++) { AddTileImage("deco_cay" + i, "deco_cay" + i + ".png"); }
             for (int i = 1; i <= 2; i++) { AddTileImage("deco_da" + i, "deco_da" + i + ".png"); }
@@ -406,6 +471,7 @@ namespace LapTrinhTrucQuangProjectTest
             AddTileImage("tile_invisible", "tile_invisible.png");
             AddTileImage("deco_53", "deco_53.gif");
             AddTileImage("deco_65", "deco_65.gif");
+            AddTileImage("deco_69", "deco_69.gif");
             AddTileImage("deco_bui5.1", "deco_bui5.1.png");
             AddTileImage("deco_bui5.2", "deco_bui5.2.png");
             AddTileImage("deco_bui5.3", "deco_bui5.3.png");
@@ -593,7 +659,7 @@ namespace LapTrinhTrucQuangProjectTest
             floatingTexts.Add(new FloatingText(text, x + 10, y - 10, color));
         }
 
-        // ===== WINDOW & GAME LOOP (ĐÃ SỬA ĐỔI) =====
+        // ===== WINDOW & GAME LOOP =====
         private void UpdateScale()
         {
             int w = Math.Max(1, this.ClientSize.Width);
@@ -752,25 +818,29 @@ namespace LapTrinhTrucQuangProjectTest
                 Enemy en = enemies[i];
                 if (en.IsDead) continue;
 
-                // A. Di chuyển
+                // DI CHUYỂN:
                 int moveStep = en.FacingRight ? en.Speed : -en.Speed;
                 en.Rect.X += moveStep;
-                en.Rect.Y += 4;
-                // B. AI: Quay đầu khi gặp tường hoặc hết đường
-                int lookAhead = 10;
-                int sensorX = en.FacingRight ? (en.Rect.Right + 2) : (en.Rect.Left - 2 - lookAhead);
 
-                // Sensor tường (Check ngay trước mặt)
+                // Chỉ áp dụng trọng lực cho quái thường (Boss bay lơ lửng)
+                if (!en.IsBoss)
+                {
+                    en.Rect.Y += 4;
+                }
+
+                // AI & XỬ LÝ VA CHẠM (Tách riêng Boss và Quái thường):
+
+                // --- Sensor chung để check tường ---
                 Rectangle wallSensor = new Rectangle(en.FacingRight ? en.Rect.Right : en.Rect.Left - 2, en.Rect.Y, 2, en.Rect.Height - 5);
-                // Sensor đất (Check dưới chân + phía trước 1 khoảng)
-                Rectangle groundSensor = new Rectangle(en.FacingRight ? en.Rect.Right : en.Rect.Left - lookAhead, en.Rect.Bottom, lookAhead, 4);
-
                 bool hitWall = false;
-                bool hasGround = false;
+
+                // Quét tường trước
                 foreach (var p in Solid)
                 {
-                    // Nếu Boss rơi trúng platform thì đẩy ngược lên cho đứng vừa khít
-                    if (en.Rect.IntersectsWith(p))
+                    if (wallSensor.IntersectsWith(p)) hitWall = true;
+
+                    // Logic đẩy quái thường lên nếu lún đất (Boss không cần vì Boss bay)
+                    if (!en.IsBoss && en.Rect.IntersectsWith(p))
                     {
                         if (en.Rect.Bottom > p.Top && en.Rect.Top < p.Top)
                         {
@@ -778,18 +848,42 @@ namespace LapTrinhTrucQuangProjectTest
                         }
                     }
                 }
-                foreach (var p in Solid)
+
+                if (en.IsBoss)
                 {
-                    if (wallSensor.IntersectsWith(p)) hitWall = true;
-                    if (groundSensor.IntersectsWith(p)) hasGround = true;
+                    // LOGIC RIÊNG CHO BOSS (Biết bay)
+                    // Boss chỉ quay đầu khi:
+                    // 1. Đụng tường (hitWall)
+                    // 2. Chạm mép trái màn hình (<= 0)
+                    // 3. Chạm mép phải màn hình (>= baseWidth)
+                    // QUAN TRỌNG: Không quan tâm hasGround (đất)
+
+                    if (hitWall || en.Rect.Left <= 0 || en.Rect.Right >= baseWidth)
+                    {
+                        en.FacingRight = !en.FacingRight; // Quay đầu
+                    }
+                }
+                else
+                {
+                    // === LOGIC RIÊNG CHO QUÁI THƯỜNG (Đi bộ) ===
+                    // Cần check thêm đất (hasGround)
+                    int lookAhead = 10;
+                    Rectangle groundSensor = new Rectangle(en.FacingRight ? en.Rect.Right : en.Rect.Left - lookAhead, en.Rect.Bottom, lookAhead, 4);
+                    bool hasGround = false;
+
+                    foreach (var p in Solid)
+                    {
+                        if (groundSensor.IntersectsWith(p)) hasGround = true;
+                    }
+
+                    // Quái thường quay đầu khi: Đụng tường HOẶC Hết đường
+                    if (hitWall || !hasGround)
+                    {
+                        en.FacingRight = !en.FacingRight;
+                    }
                 }
 
-                if (hitWall || !hasGround)
-                {
-                    en.FacingRight = !en.FacingRight; // Đổi hướng
-                }
-
-                // C. Tương tác với Player
+                // Tương tác với Player:
                 if (playerHitbox.IntersectsWith(en.Rect))
                 {
                     bool isFallingAttack = !onGround && jumpSpeed <= 0;
@@ -801,13 +895,14 @@ namespace LapTrinhTrucQuangProjectTest
 
                         // 1. Trừ máu enemy
                         en.CurrentHP--;
-                        // Hiện chữ sát thương (Critical hit) màu cam
+                        en.Speed += 1;
+                        // Hiện chữ sát thương (Critical hit) màu cam đỏ
                         AddFloatingText("CRIT!! +5", player.X, player.Y, Color.OrangeRed);
 
                         // 2. Nảy người chơi lên
                         jumping = true;
                         onGround = false;
-                        jumpSpeed = en.IsBoss ? 30 : 15; // Nảy cao hơn nếu đạp Boss
+                        jumpSpeed = en.IsBoss ? 32 : 15; // Nảy cao hơn nếu đạp Boss
 
                         // 3. Kiểm tra chết
                         if (en.CurrentHP <= 0)
@@ -864,7 +959,7 @@ namespace LapTrinhTrucQuangProjectTest
 
             foreach (var t in tiles)
             {
-                if (t.Type.StartsWith("water_") || t.Type.StartsWith("deco_arm"))
+                if (t.Type.StartsWith("water_") || t.Type.StartsWith("deco_arm") || t.Type.StartsWith("deco_69"))
                 {
                     if (playerHitbox.IntersectsWith(t.Rect))
                     {
@@ -902,7 +997,7 @@ namespace LapTrinhTrucQuangProjectTest
                         {
                             currentHealth -= 10;
                             AddFloatingText("-10", player.X, player.Y, Color.Red);
-                            hitTrap = true; // Đánh dấu đã dính, không trừ liên tục
+                            hitTrap = true;
                         }
                         // Hất tung nhân vật lên
                         jumping = true;
@@ -977,8 +1072,11 @@ namespace LapTrinhTrucQuangProjectTest
             if (jumping) { player.Y -= jumpSpeed; jumpSpeed -= 1; }
             if (!onGround && !isClimbed)
             {
-                int currentGravity = isSubmerged ? 2 : gravity; // Ở dưới nước rơi chậm hơn
-                player.Y += currentGravity;
+                if (isSubmerged) { player.Y += 2; }                
+                else
+                {
+                    player.Y += gravity;
+                }
             }
             Rectangle coll = GetCollRect(player, facingRight); // tính toán hitbox mới sau khi Y thay đổi
 
@@ -1221,7 +1319,16 @@ namespace LapTrinhTrucQuangProjectTest
                     }
                 }
             }
-
+            for (int i = coin5.Count - 1; i >= 0; i--)
+            {
+                if (coll.IntersectsWith(coin5[i]) && isCollected == false)
+                {
+                    isCollected = true;
+                    score += 10;
+                    AddFloatingText("+10", coin5[i].X, coin5[i].Y, Color.Crimson);
+                    coin5.RemoveAt(i);
+                }
+            }
             // XỬ LÝ CHỮ BAY (FADING TEXT):
             for (int i = floatingTexts.Count - 1; i >= 0; i--)
             {
@@ -1265,9 +1372,12 @@ namespace LapTrinhTrucQuangProjectTest
             coinAnim2.Update(dt);
             coinAnim3.Update(dt);
             coinAnim4.Update(dt);
-            // gọi hàm tương tự cho animation cửa qua màn và các loại coin trong game
+            coinAnim5.Update(dt);
             decoAnim1.Update(dt);
             decoAnim2.Update(dt);
+            decoAnim3.Update(dt);
+            decoAnim4.Update(dt);
+            decoAnim5.Update(dt);
             trapAnim1.Update(dt);
             trapAnim2.Update(dt);
             trapAnim3.Update(dt);
@@ -1414,6 +1524,7 @@ namespace LapTrinhTrucQuangProjectTest
             coin2.Clear();
             coin3.Clear();
             coin4.Clear();
+            coin5.Clear();
             // SỬ DỤNG container.Controls
             foreach (Control c in container.Controls)
             {
@@ -1454,6 +1565,11 @@ namespace LapTrinhTrucQuangProjectTest
                     coin4.Add(new Rectangle(c.Left, c.Top, c.Width, c.Height));
                     c.Visible = false;
                 }
+                if (tag != null && tag.StartsWith("coin_5"))
+                {
+                    coin5.Add(new Rectangle(c.Left, c.Top, c.Width, c.Height));
+                    c.Visible = false;
+                }
                 if (tag == "player")
                 {
                     player.X = c.Left;
@@ -1472,9 +1588,9 @@ namespace LapTrinhTrucQuangProjectTest
                     // Boss to hơn và trâu hơn
                     Enemy boss = new Enemy(c.Left, c.Top, c.Width, c.Height);
                     boss.IsBoss = true;
-                    boss.MaxHP = 5;
-                    boss.CurrentHP = 5;
-                    boss.Speed = 3;
+                    boss.MaxHP = 10;
+                    boss.CurrentHP = 10;
+                    boss.Speed = 2;
                     enemies.Add(boss);
                     c.Visible = false;
                 }
@@ -1488,6 +1604,7 @@ namespace LapTrinhTrucQuangProjectTest
             // 'this' bây giờ là MapLevel1 (User Control)
             LoadMapFromContainer(this);
             LoadBackground(@"Images\background1.gif");
+            RenderStaticLayer();
         }
         private void CreateLevel2()
         {
@@ -1499,6 +1616,7 @@ namespace LapTrinhTrucQuangProjectTest
             LoadBackground(@"Images\background3.gif");
             // Hút xong thì xóa tờ bản đồ đó đi cho nhẹ máy
             map.Dispose();
+            RenderStaticLayer();
         }
         private void CreateLevel3()
         {
@@ -1506,12 +1624,15 @@ namespace LapTrinhTrucQuangProjectTest
             LoadMapFromContainer(map);
             LoadBackground(@"Images\background4.gif");
             map.Dispose();
+            RenderStaticLayer();
         }
         private void CreateLevel4()
         {
             MapLevel4 map = new MapLevel4();
             LoadMapFromContainer(map);
+            LoadBackground(@"Images\background5.gif");
             map.Dispose();
+            RenderStaticLayer();
         }
         //private void CreateLevel5()
         //{
@@ -1534,7 +1655,7 @@ namespace LapTrinhTrucQuangProjectTest
             platforms.Clear();
             tiles.Clear();
             enemies.Clear();
-            coin1.Clear(); coin2.Clear(); coin3.Clear(); coin4.Clear();
+            coin1.Clear(); coin2.Clear(); coin3.Clear(); coin4.Clear(); coin5.Clear();
             secretSpawned = false;
             // clear các list khác nếu có 
 
@@ -1569,6 +1690,9 @@ namespace LapTrinhTrucQuangProjectTest
         {
             base.OnPaint(e); // gọi hàm vẽ của Windows
             e.Graphics.ScaleTransform(scaleX, scaleY); // áp dụng tỷ lệ scale của hàm UpdateScale cho form, để các nét vẽ đều được scale theo tỷ lệ form
+            // 2 dòng tránh mờ khi vẽ:
+            e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+            e.Graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
 
             if (isLoading)
             {
@@ -1579,10 +1703,8 @@ namespace LapTrinhTrucQuangProjectTest
                 {
                     e.Graphics.DrawImage(loadingBg, 0, 0, baseWidth, baseHeight);
                 }
-
-                // Hiện thêm chữ Loading... cho chắc chắn
-                e.Graphics.DrawString("LOADING...", new Font("Arial", 12), Brushes.White, 10, 10);
-
+                e.Graphics.DrawString("LOADING...", new Font("Arial", 12), Brushes.White, 50, 10);
+                e.Graphics.DrawString("MẸO: rơi sau khi nhảy sẽ nhanh hơn so với rơi bình thường", new Font("Arial", 12), Brushes.White, 50, 40);
                 return;
             }
 
@@ -1629,10 +1751,16 @@ namespace LapTrinhTrucQuangProjectTest
                     e.Graphics.FillRectangle(Brushes.SaddleBrown, p); // nếu file ảnh bị lỗi thì vẽ một hình màu nâu thay thế
                 }
             }
+            // === BƯỚC 1: VẼ LỚP TĨNH (Đất, đá, tường, cây cối tĩnh...) ===
+            if (staticLayer != null)
+            {
+                e.Graphics.DrawImage(staticLayer, 0, 0);
+            }
 
+            // === BƯỚC 2: VẼ CÁC VẬT THỂ ĐỘNG (ANIMATION / GIF) ===
             foreach (var t in tiles)
             {
-                // Các hiệu ứng đặc biệt cho trap và deco cụ thể
+                // 1. Xử lý Sprite Animation (Dùng class SpriteAnim)
                 if (t.Type == "trap_3") { trapAnim1.Draw(e.Graphics, t.Rect, false); continue; }
                 if (t.Type == "trap_4") { trapAnim2.Draw(e.Graphics, t.Rect, false); continue; }
                 if (t.Type == "trap_5") { trapAnim3.Draw(e.Graphics, t.Rect, false); continue; }
@@ -1640,19 +1768,32 @@ namespace LapTrinhTrucQuangProjectTest
                 if (t.Type == "trap_7") { trapAnim5.Draw(e.Graphics, t.Rect, false); continue; }
                 if (t.Type == "deco_arrow") { decoAnim1.Draw(e.Graphics, t.Rect, false); continue; }
                 if (t.Type == "deco_7") { decoAnim2.Draw(e.Graphics, t.Rect, false); continue; }
+                if (t.Type == "deco_74") { decoAnim3.Draw(e.Graphics, t.Rect, false); continue; }
+                if (t.Type == "deco_75") { decoAnim4.Draw(e.Graphics, t.Rect, false); continue; }
+                if (t.Type == "deco_76") { decoAnim5.Draw(e.Graphics, t.Rect, false); continue; }
 
-                // Tìm ảnh trong kho dựa theo Tag (t.Type)
-                if (tileAssets.ContainsKey(t.Type) && tileAssets[t.Type] != null)
+                // 2. Xử lý GIF hoặc ảnh động cơ bản (Water, Deco GIF)
+                // Kiểm tra xem nó có nằm trong nhóm GIF/Nước không
+                bool isGifOrWater = t.Type.StartsWith("water_") ||
+                                    t.Type == "deco_53" ||
+                                    t.Type == "deco_65" ||
+                                    t.Type == "deco_69";
+
+                if (isGifOrWater)
                 {
-                    Bitmap img = tileAssets[t.Type];
-                    ImageAnimator.UpdateFrames(img); // Dòng này dùng để cập nhật frame cho file gif
-                    e.Graphics.DrawImage(img, t.Rect);
+                    if (tileAssets.ContainsKey(t.Type))
+                    {
+                        Bitmap img = tileAssets[t.Type];
+
+                        // Cập nhật khung hình cho GIF
+                        ImageAnimator.UpdateFrames(img);
+
+                        e.Graphics.DrawImage(img, t.Rect);
+                    }
                 }
-                else
-                {
-                    // Nếu quên nạp ảnh hoặc sai tag -> Vẽ màu xám báo lỗi
-                    e.Graphics.FillRectangle(Brushes.Gray, t.Rect);
-                }
+
+                // Lưu ý: Các tile tĩnh (đất, đá...) sẽ bị bỏ qua ở đây 
+                // vì chúng không khớp với các if ở trên, và đã được vẽ ở Bước 1 rồi.
             }
 
             // nếu đứng yên -> vẽ frame tĩnh; còn lại -> vẽ anim hiện tại
@@ -1709,6 +1850,17 @@ namespace LapTrinhTrucQuangProjectTest
                     e.Graphics.FillRectangle(Brushes.Gold, c);
                 }
             }
+            foreach (var c in coin5)
+            {
+                if (coinAnim5.Sheet != null)
+                {
+                    coinAnim5.Draw(e.Graphics, c, true);
+                }
+                else
+                {
+                    e.Graphics.FillRectangle(Brushes.Gold, c);
+                }
+            }
             foreach (var en in enemies)
             {
                 if (en.IsDead) continue;
@@ -1744,18 +1896,18 @@ namespace LapTrinhTrucQuangProjectTest
             }
 
             // DEBUG: xem hitbox va chạm
-            using (var pen = new Pen(Color.Lime, 2))
-            {
-                // Vẽ khung xanh lá cho Player
-                e.Graphics.DrawRectangle(pen, GetCollRect(player, facingRight));
+            //using (var pen = new Pen(Color.Lime, 2))
+            //{
+            //    // Vẽ khung xanh lá cho Player
+            //    e.Graphics.DrawRectangle(pen, GetCollRect(player, facingRight));
 
-                // Vẽ khung đỏ cho Enemy/Boss
-                foreach (var en in enemies)
-                {
-                    // Nếu kẻ địch chưa chết thì vẽ khung hitbox để kiểm tra va chạm
-                    if (!en.IsDead) e.Graphics.DrawRectangle(Pens.Red, en.Rect);
-                }
-            }
+            //    // Vẽ khung đỏ cho Enemy/Boss
+            //    foreach (var en in enemies)
+            //    {
+            //        // Nếu kẻ địch chưa chết thì vẽ khung hitbox để kiểm tra va chạm
+            //        if (!en.IsDead) e.Graphics.DrawRectangle(Pens.Red, en.Rect);
+            //    }
+            //}
 
             // ===== VẼ GIAO DIỆN (UI) - THANH MÁU =====
             // 1. Cấu hình vị trí
@@ -1770,9 +1922,9 @@ namespace LapTrinhTrucQuangProjectTest
             using (Font hpFont = new Font("Arial", 12, FontStyle.Bold))
             {
                 // Vẽ bóng đen cho chữ nổi bật
-                e.Graphics.DrawString(hp, hpFont, Brushes.Black, barX - 40, barY);
-                // Vẽ chữ "HP" màu đỏ, nằm bên trái thanh máu
-                e.Graphics.DrawString(hp, hpFont, Brushes.Red, barX - 42, barY - 2);
+                e.Graphics.DrawString(hp, hpFont, Brushes.Black, 50, 5);
+                // Vẽ chữ "HP" màu đỏ, nằm bên trên thanh máu
+                e.Graphics.DrawString(hp, hpFont, Brushes.Red, 48, 3);
             }
 
             // 2. Tính toán độ dài phần máu còn lại
@@ -1854,7 +2006,7 @@ namespace LapTrinhTrucQuangProjectTest
                     e.Graphics.DrawString("GAME OVER", this.Font, Brushes.Red, 100, 100);
                 }
 
-                // 3. Vẽ dòng hướng dẫn "Press R"
+                // 3. Vẽ dòng hướng dẫn 
                 string text2 = "Nhấn R để chơi lại";
                 using (Font font2 = new Font("Arial", 16, FontStyle.Regular))
                 {

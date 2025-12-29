@@ -193,17 +193,13 @@
             this.panel167 = new System.Windows.Forms.Panel();
             this.panel168 = new System.Windows.Forms.Panel();
             this.panel163 = new System.Windows.Forms.Panel();
-            this.panel172 = new System.Windows.Forms.Panel();
             this.panel173 = new System.Windows.Forms.Panel();
             this.panel176 = new System.Windows.Forms.Panel();
             this.panel177 = new System.Windows.Forms.Panel();
             this.panel178 = new System.Windows.Forms.Panel();
-            this.panel179 = new System.Windows.Forms.Panel();
-            this.panel180 = new System.Windows.Forms.Panel();
             this.panel171 = new System.Windows.Forms.Panel();
             this.panel174 = new System.Windows.Forms.Panel();
             this.panel175 = new System.Windows.Forms.Panel();
-            this.panel181 = new System.Windows.Forms.Panel();
             this.panel182 = new System.Windows.Forms.Panel();
             this.panel165 = new System.Windows.Forms.Panel();
             this.panel169 = new System.Windows.Forms.Panel();
@@ -219,6 +215,7 @@
             this.btnHome = new System.Windows.Forms.Button();
             this.btnContinue = new System.Windows.Forms.Button();
             this.btnReset = new System.Windows.Forms.Button();
+            this.panel194 = new System.Windows.Forms.Panel();
             this.SuspendLayout();
             // 
             // panel5
@@ -250,7 +247,7 @@
             // 
             // panel6
             // 
-            this.panel6.Location = new System.Drawing.Point(299, 192);
+            this.panel6.Location = new System.Drawing.Point(3, 286);
             this.panel6.Name = "panel6";
             this.panel6.Size = new System.Drawing.Size(40, 40);
             this.panel6.TabIndex = 18;
@@ -1722,23 +1719,14 @@
             this.panel163.TabIndex = 103;
             this.panel163.Tag = "deco_12";
             // 
-            // panel172
-            // 
-            this.panel172.BackColor = System.Drawing.Color.SaddleBrown;
-            this.panel172.Location = new System.Drawing.Point(0, 248);
-            this.panel172.Name = "panel172";
-            this.panel172.Size = new System.Drawing.Size(45, 31);
-            this.panel172.TabIndex = 25;
-            this.panel172.Tag = "tile_46";
-            // 
             // panel173
             // 
             this.panel173.BackColor = System.Drawing.Color.SaddleBrown;
-            this.panel173.Location = new System.Drawing.Point(44, 248);
+            this.panel173.Location = new System.Drawing.Point(0, 248);
             this.panel173.Name = "panel173";
             this.panel173.Size = new System.Drawing.Size(45, 31);
             this.panel173.TabIndex = 31;
-            this.panel173.Tag = "tile_48";
+            this.panel173.Tag = "tile_60";
             // 
             // panel176
             // 
@@ -1767,24 +1755,6 @@
             this.panel178.TabIndex = 31;
             this.panel178.Tag = "tile_47";
             // 
-            // panel179
-            // 
-            this.panel179.BackColor = System.Drawing.Color.SaddleBrown;
-            this.panel179.Location = new System.Drawing.Point(0, 344);
-            this.panel179.Name = "panel179";
-            this.panel179.Size = new System.Drawing.Size(45, 31);
-            this.panel179.TabIndex = 25;
-            this.panel179.Tag = "tile_46";
-            // 
-            // panel180
-            // 
-            this.panel180.BackColor = System.Drawing.Color.SaddleBrown;
-            this.panel180.Location = new System.Drawing.Point(44, 344);
-            this.panel180.Name = "panel180";
-            this.panel180.Size = new System.Drawing.Size(45, 31);
-            this.panel180.TabIndex = 31;
-            this.panel180.Tag = "tile_48";
-            // 
             // panel171
             // 
             this.panel171.BackColor = System.Drawing.Color.SaddleBrown;
@@ -1812,19 +1782,10 @@
             this.panel175.TabIndex = 31;
             this.panel175.Tag = "tile_48";
             // 
-            // panel181
-            // 
-            this.panel181.BackColor = System.Drawing.Color.SaddleBrown;
-            this.panel181.Location = new System.Drawing.Point(0, 211);
-            this.panel181.Name = "panel181";
-            this.panel181.Size = new System.Drawing.Size(45, 36);
-            this.panel181.TabIndex = 108;
-            this.panel181.Tag = "coin_1";
-            // 
             // panel182
             // 
             this.panel182.BackColor = System.Drawing.Color.SaddleBrown;
-            this.panel182.Location = new System.Drawing.Point(44, 211);
+            this.panel182.Location = new System.Drawing.Point(0, 211);
             this.panel182.Name = "panel182";
             this.panel182.Size = new System.Drawing.Size(45, 36);
             this.panel182.TabIndex = 108;
@@ -1930,7 +1891,7 @@
             this.btnMenu.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
             this.btnMenu.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
             this.btnMenu.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnMenu.Location = new System.Drawing.Point(950, 5);
+            this.btnMenu.Location = new System.Drawing.Point(8, 5);
             this.btnMenu.Name = "btnMenu";
             this.btnMenu.Size = new System.Drawing.Size(50, 50);
             this.btnMenu.TabIndex = 109;
@@ -1947,7 +1908,7 @@
             this.btnHome.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
             this.btnHome.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
             this.btnHome.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnHome.Location = new System.Drawing.Point(1010, 5);
+            this.btnHome.Location = new System.Drawing.Point(8, 60);
             this.btnHome.Name = "btnHome";
             this.btnHome.Size = new System.Drawing.Size(50, 50);
             this.btnHome.TabIndex = 116;
@@ -1991,11 +1952,22 @@
             this.btnReset.Visible = false;
             this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
             // 
+            // panel194
+            // 
+            this.panel194.BackColor = System.Drawing.Color.SaddleBrown;
+            this.panel194.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.panel194.Location = new System.Drawing.Point(65, 286);
+            this.panel194.Name = "panel194";
+            this.panel194.Size = new System.Drawing.Size(42, 36);
+            this.panel194.TabIndex = 129;
+            this.panel194.Tag = "coin_4";
+            // 
             // MapLevel2
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.Controls.Add(this.panel194);
             this.Controls.Add(this.btnReset);
             this.Controls.Add(this.btnContinue);
             this.Controls.Add(this.btnHome);
@@ -2020,7 +1992,6 @@
             this.Controls.Add(this.panel142);
             this.Controls.Add(this.panel149);
             this.Controls.Add(this.panel182);
-            this.Controls.Add(this.panel181);
             this.Controls.Add(this.panel137);
             this.Controls.Add(this.panel141);
             this.Controls.Add(this.panel136);
@@ -2075,7 +2046,6 @@
             this.Controls.Add(this.panel169);
             this.Controls.Add(this.panel174);
             this.Controls.Add(this.panel178);
-            this.Controls.Add(this.panel180);
             this.Controls.Add(this.panel173);
             this.Controls.Add(this.panel45);
             this.Controls.Add(this.panel113);
@@ -2142,9 +2112,7 @@
             this.Controls.Add(this.panel165);
             this.Controls.Add(this.panel56);
             this.Controls.Add(this.panel177);
-            this.Controls.Add(this.panel179);
             this.Controls.Add(this.panel132);
-            this.Controls.Add(this.panel172);
             this.Controls.Add(this.panel36);
             this.Controls.Add(this.panel3);
             this.Controls.Add(this.panel110);
@@ -2362,17 +2330,13 @@
         private System.Windows.Forms.Panel panel167;
         private System.Windows.Forms.Panel panel168;
         private System.Windows.Forms.Panel panel163;
-        private System.Windows.Forms.Panel panel172;
         private System.Windows.Forms.Panel panel173;
         private System.Windows.Forms.Panel panel176;
         private System.Windows.Forms.Panel panel177;
         private System.Windows.Forms.Panel panel178;
-        private System.Windows.Forms.Panel panel179;
-        private System.Windows.Forms.Panel panel180;
         private System.Windows.Forms.Panel panel171;
         private System.Windows.Forms.Panel panel174;
         private System.Windows.Forms.Panel panel175;
-        private System.Windows.Forms.Panel panel181;
         private System.Windows.Forms.Panel panel182;
         private System.Windows.Forms.Panel panel165;
         private System.Windows.Forms.Panel panel169;
@@ -2388,5 +2352,6 @@
         private System.Windows.Forms.Button btnHome;
         private System.Windows.Forms.Button btnContinue;
         private System.Windows.Forms.Button btnReset;
+        private System.Windows.Forms.Panel panel194;
     }
 }

@@ -42,7 +42,7 @@
             this.btnExit.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
             this.btnExit.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
             this.btnExit.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnExit.Location = new System.Drawing.Point(450, 200);
+            this.btnExit.Location = new System.Drawing.Point(450, 492);
             this.btnExit.Name = "btnExit";
             this.btnExit.Size = new System.Drawing.Size(132, 41);
             this.btnExit.TabIndex = 1;
@@ -59,7 +59,7 @@
             this.btnNewGame.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
             this.btnNewGame.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
             this.btnNewGame.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnNewGame.Location = new System.Drawing.Point(450, 130);
+            this.btnNewGame.Location = new System.Drawing.Point(450, 430);
             this.btnNewGame.Name = "btnNewGame";
             this.btnNewGame.Size = new System.Drawing.Size(132, 41);
             this.btnNewGame.TabIndex = 0;
@@ -70,7 +70,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.SystemColors.Control;
+            this.BackColor = System.Drawing.SystemColors.ButtonHighlight;
             this.ClientSize = new System.Drawing.Size(1069, 560);
             this.Controls.Add(this.btnExit);
             this.Controls.Add(this.btnNewGame);
