@@ -23,15 +23,19 @@ namespace LapTrinhTrucQuangProjectTest
         bool goLeft, goRight,goUp,goDown, jumping, onGround, levelTransitioning;
         int jumpSpeed = 0, force = 20, gravity = 8, playerSpeed = 3, currentLevel = 1;
         int score = 0;
+        int currentScore = 0;
         int maxHealth = 100;     // Máu tối đa
         int currentHealth = 100; // Máu hiện tại
         bool isGameOver = false;
         bool isSubmerged = false;
         bool isCollected = false;
         bool isClimbed = false;
-        bool secretSpawned = false; // Biến kiểm tra xem đã hiện coin bí mật chưa
+        bool secretSpawned = false;
         int startX;
         int startY;
+        Bitmap PhaDao1, PhaDao2, PhaDao3; // 3 ảnh phá đảo
+        Bitmap PhaDao;
+        bool isVictory = false;   
 
         // Các biến dùng cho việc Resize và Scale giao diện UserControl
         private Size _originalFormSize;
@@ -96,6 +100,7 @@ namespace LapTrinhTrucQuangProjectTest
             public int MaxHP = 1;      // Máu tối đa (Quái thường = 1, Boss = 5)
             public int CurrentHP = 1; // Máu hiện tại
             public bool IsBoss = false; // Đánh dấu đây có phải Boss không
+            public string EnemyType = "normal";
             public Enemy(int x, int y, int w, int h)
             {
                 Rect = new Rectangle(x, y, w, h);
@@ -287,6 +292,12 @@ namespace LapTrinhTrucQuangProjectTest
         private readonly string DecoPath4 = @"Images\deco_75.png";
         private readonly string DecoPath5 = @"Images\deco_76.png";
         private readonly string EnemyPath = @"Images\enemy.png";
+        private readonly string EnemyPath2 = @"Images\enemy_2.png";
+        private readonly string EnemyPath3 = @"Images\enemy_3.png";
+        private readonly string EnemyPath4 = @"Images\enemy_4.png";
+        private readonly string EnemyPath5 = @"Images\enemy_5.png";
+        private readonly string EnemyPath6 = @"Images\enemy_6.png";
+        private readonly string EnemyPath7 = @"Images\enemy_7.png";
         private readonly string BossPath = @"Images\boss.png";
         private readonly string TrapPath1 = @"Images\trap_3.png";
         private readonly string TrapPath2 = @"Images\trap_4.png";
@@ -310,6 +321,12 @@ namespace LapTrinhTrucQuangProjectTest
         SpriteAnim decoAnim4 = new SpriteAnim { FPS = 4, Loop = true };
         SpriteAnim decoAnim5 = new SpriteAnim { FPS = 4, Loop = true };
         SpriteAnim enemyAnim = new SpriteAnim { FPS = 8, Loop = true };
+        SpriteAnim enemyAnim2 = new SpriteAnim { FPS = 8, Loop = true };
+        SpriteAnim enemyAnim3 = new SpriteAnim { FPS = 8, Loop = true };
+        SpriteAnim enemyAnim4 = new SpriteAnim { FPS = 9, Loop = true };
+        SpriteAnim enemyAnim5 = new SpriteAnim { FPS = 8, Loop = true };
+        SpriteAnim enemyAnim6 = new SpriteAnim { FPS = 8, Loop = true };
+        SpriteAnim enemyAnim7 = new SpriteAnim { FPS = 10, Loop = true };
         SpriteAnim bossAnim = new SpriteAnim { FPS = 7, Loop = true };
         SpriteAnim trapAnim1 = new SpriteAnim { FPS = 20, Loop = true };
         SpriteAnim trapAnim2 = new SpriteAnim { FPS = 6, Loop = true };
@@ -452,6 +469,13 @@ namespace LapTrinhTrucQuangProjectTest
             LoadAnimationEven(DecoPath4, decoAnim4, 6, alphaThreshold: 16, tightenEdges: true);
             LoadAnimationEven(DecoPath5, decoAnim5, 6, alphaThreshold: 16, tightenEdges: true);
             LoadAnimationEven(EnemyPath, enemyAnim, 12, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(EnemyPath2, enemyAnim2, 12, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(EnemyPath3, enemyAnim3, 12, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(EnemyPath4, enemyAnim4, 8, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(EnemyPath5, enemyAnim5, 8, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(EnemyPath6, enemyAnim6, 6, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(EnemyPath7, enemyAnim7, 6, alphaThreshold: 16, tightenEdges: true);
+            LoadAnimationEven(EnemyPath, enemyAnim, 12, alphaThreshold: 16, tightenEdges: true);
             LoadAnimationEven(BossPath, bossAnim, 6, alphaThreshold: 16, tightenEdges: true);
             LoadAnimationEven(TrapPath1, trapAnim1, 8, alphaThreshold: 16, tightenEdges: true);
             LoadAnimationEven(TrapPath2, trapAnim2, 4, alphaThreshold: 16, tightenEdges: true);
@@ -485,6 +509,9 @@ namespace LapTrinhTrucQuangProjectTest
             {
                 if (File.Exists(@"Images\platform.png")) platformImg = (Bitmap)Image.FromFile(@"Images\platform.png");
                 if (File.Exists(@"Images\GameOverFont_2.png")) gameOverImg = (Bitmap)Image.FromFile(@"Images\GameOverFont_2.png");
+                if (File.Exists(@"Images\PhaDao1.png")) PhaDao1 = (Bitmap)Image.FromFile(@"Images\PhaDao1.png");
+                if (File.Exists(@"Images\PhaDao2.png")) PhaDao2 = (Bitmap)Image.FromFile(@"Images\PhaDao2.png");
+                if (File.Exists(@"Images\PhaDao3.png")) PhaDao3 = (Bitmap)Image.FromFile(@"Images\PhaDao3.png");
             }
             catch { }
 
@@ -895,9 +922,9 @@ namespace LapTrinhTrucQuangProjectTest
 
                         // 1. Trừ máu enemy
                         en.CurrentHP--;
-                        en.Speed += 1;
+                        if (en.IsBoss) en.Speed += 1;
                         // Hiện chữ sát thương (Critical hit) màu cam đỏ
-                        AddFloatingText("CRIT!! +5", player.X, player.Y, Color.OrangeRed);
+                        AddFloatingText("CRIT!! -1", player.X, player.Y, Color.OrangeRed);                        
 
                         // 2. Nảy người chơi lên
                         jumping = true;
@@ -909,10 +936,50 @@ namespace LapTrinhTrucQuangProjectTest
                         {
                             en.IsDead = true;
                             score += (en.IsBoss ? 100 : 5);
-
+                            if (!en.IsBoss) AddFloatingText("KILLED!! +5", player.X, player.Y - 30, Color.LightGreen);
                             if (en.IsBoss)
                             {
-                                MessageBox.Show("YOU WIN! Đã tiêu diệt Boss!");
+                                // Kiểm tra xem đây có phải là màn cuối không (ví dụ màn 4)
+                                if (currentLevel == 4)
+                                {
+                                    isVictory = true; // Bật trạng thái thắng
+                                    gameTimer.Stop(); // Dừng game ngay lập tức
+                                    if (score >= 999)
+                                    {
+                                        PhaDao = PhaDao3;
+                                    }
+                                    else if (score >= 300 && score < 999)
+                                    {
+                                        PhaDao = PhaDao2;
+                                    }
+                                    else // score < 300
+                                    {
+                                        PhaDao = PhaDao1;
+                                    }
+
+                                    Invalidate(); // Vẽ lại màn hình để hiện ảnh
+                                    return; // Thoát khỏi hàm GameLoop ngay
+                                }                                
+                            }
+                        }
+                        if (currentLevel == 3)
+                        {
+                            // Kiểm tra xem còn con quái nào sống sót không
+                            bool allDead = true;
+                            foreach (var checkEn in enemies)
+                            {
+                                if (checkEn.IsDead == false)
+                                {
+                                    allDead = false; // Vẫn còn ít nhất 1 con sống
+                                    break;
+                                }
+                            }
+
+                            // Nếu tất cả đã chết -> Spawn Coin
+                            if (allDead)
+                            {
+                                coin4.Add(new Rectangle(700, 80, 32, 32));
+                                AddFloatingText("CLEARED! SECRET APPEARED!!", 700, 80, Color.Pink);
                             }
                         }
                     }
@@ -1271,6 +1338,11 @@ namespace LapTrinhTrucQuangProjectTest
                     score += 1;
                     AddFloatingText("+1", player.X, player.Y, Color.Gold); // Hiện chữ +1 vàng
                     coin1.RemoveAt(i);
+                    if (currentLevel == 2 && coin1.Count == 0)
+                    {
+                        coin4.Add(new Rectangle(45, 240, 32, 32));
+                        AddFloatingText("SECRET APPEARED!!", 40, 300, Color.Pink);                       
+                    }
                 }
             }
             for (int i = coin2.Count - 1; i >= 0; i--)
@@ -1302,16 +1374,13 @@ namespace LapTrinhTrucQuangProjectTest
                     onGround = false;
                     jumpSpeed = 23;
                     AddFloatingText("UP!!!", coin4[i].X, coin4[i].Y, Color.Pink); // Hiện chữ UP
-                    coin4.RemoveAt(i);
-                    if (coin4.Count == 1 && secretSpawned == false) // khi đã ăn hết coin4 thì chạy đoạn code sau:
+                    coin4.RemoveAt(i);                   
+                    if (currentLevel == 3 && coin4.Count == 1 && secretSpawned == false) // khi đã ăn hết coin4 thì chạy đoạn code sau:
                     {
                         secretSpawned = true;
-                        int spawnX = 0; int spawnY = 0; // vị trí xuất hiện coin4 secret
-                        if (currentLevel == 3)
-                        {
-                            spawnX = 320;
-                            spawnY = 290;
-                        }
+                        int spawnX = 0; int spawnY = 0; // vị trí xuất hiện coin4 secret                        
+                        spawnX = 320;
+                        spawnY = 290;
                         coin4.Add(new Rectangle(spawnX, spawnY, 32, 32)); // tạo coin4 tại tọa độ cần thiết để qua màn
                         AddFloatingText("SECRET APPEARED!!", spawnX, spawnY, Color.Pink);
                         coin4.Add(new Rectangle(500, 420, 32, 32)); // tạo thêm coin4 khác tại tọa đô nếu cần
@@ -1384,6 +1453,12 @@ namespace LapTrinhTrucQuangProjectTest
             trapAnim4.Update(dt);
             trapAnim5.Update(dt);
             enemyAnim.Update(dt);
+            enemyAnim2.Update(dt);
+            enemyAnim3.Update(dt);
+            enemyAnim4.Update(dt);
+            enemyAnim5.Update(dt);
+            enemyAnim6.Update(dt);
+            enemyAnim7.Update(dt);
             bossAnim.Update(dt);
 
             Invalidate();
@@ -1413,8 +1488,8 @@ namespace LapTrinhTrucQuangProjectTest
                     // Reset game khi bấm R
                     isGameOver = false;
                     currentHealth = maxHealth;
-                    CreateLevel1();
-                    currentLevel = 1; // Reset về màn 1
+                    score = currentScore;
+                    LoadLevel(currentLevel);
                     gameTimer.Start();
                 }
                 return; // Không làm gì khác khi đang Game Over
@@ -1498,6 +1573,7 @@ namespace LapTrinhTrucQuangProjectTest
         // ===== LEVELS (THAY ĐỔI LoadMapFromContainer) =====
         private void NextLevel()
         {
+            currentScore = score;
             currentLevel++;
             if (currentLevel > 4) { gameTimer.Stop(); MessageBox.Show("🎉 Bạn đã hoàn thành tất cả các màn!"); ; return; }
             platforms.Clear();
@@ -1577,15 +1653,64 @@ namespace LapTrinhTrucQuangProjectTest
                     player = new Rectangle(c.Left, c.Top, 40, 40);
                     c.Visible = false;
                 }
-                if (tag == "enemy")
+                if (tag != null && tag.StartsWith("enemy"))
                 {
-                    // Tạo quái tại vị trí Panel, kích thước chuẩn 40x40
-                    enemies.Add(new Enemy(c.Left, c.Top, 40, 40));
+                    // Tạo quái mặc định
+                    Enemy en = new Enemy(c.Left, c.Top, 40, 40);
+
+                    // Kiểm tra kỹ hơn để gán loại
+                    if (tag == "enemy")
+                    {
+                        en.EnemyType = "Normal";
+                        en.Speed = 2;                                      
+                    }
+                    else if (tag == "enemy_2")
+                    {
+                        en.EnemyType = "Minotaur1";
+                        en.Speed = 1; 
+                        en.MaxHP = 5;
+                        en.CurrentHP = 5;
+                    }
+                    else if (tag == "enemy_3")
+                    {
+                        en.EnemyType = "Minotaur2";
+                        en.Speed = 1;
+                        en.MaxHP = 5;
+                        en.CurrentHP = 5;
+                    }
+                    else if (tag == "enemy_4")
+                    {
+                        en.EnemyType = "Demon";
+                        en.Speed = 2;
+                        en.MaxHP = 6;
+                        en.CurrentHP = 6;
+                    }
+                    else if (tag == "enemy_5")
+                    {
+                        en.EnemyType = "Knight";
+                        en.Speed = 1;
+                        en.MaxHP = 7;
+                        en.CurrentHP = 7;
+                    }
+                    else if (tag == "enemy_6")
+                    {
+                        en.EnemyType = "Robot";
+                        en.Speed = 3;
+                        en.MaxHP = 6;
+                        en.CurrentHP = 6;
+                    }
+                    else if (tag == "enemy_7")
+                    {
+                        en.EnemyType = "Robot_dog";
+                        en.Speed = 4;
+                        en.MaxHP = 5;
+                        en.CurrentHP = 5;
+                    }
+                    enemies.Add(en);
                     c.Visible = false;
                 }
                 if (tag == "boss")
                 {
-                    // Boss to hơn và trâu hơn
                     Enemy boss = new Enemy(c.Left, c.Top, c.Width, c.Height);
                     boss.IsBoss = true;
                     boss.MaxHP = 10;
@@ -1870,9 +1995,38 @@ namespace LapTrinhTrucQuangProjectTest
                 {
                     bossAnim.Draw(e.Graphics, en.Rect, en.FacingRight);
                 }
-                else if (!en.IsBoss && enemyAnim.Sheet != null)
+                else if (!en.IsBoss)
                 {
-                    enemyAnim.Draw(e.Graphics, en.Rect, !en.FacingRight); // Quái thường có thể cần lật ngược lại tùy sprite
+                    // KIỂM TRA LOẠI QUÁI ĐỂ VẼ 
+                    if (en.EnemyType == "Minotaur1" && enemyAnim2.Sheet != null)
+                    {
+                        enemyAnim2.Draw(e.Graphics, en.Rect, !en.FacingRight);
+                    }
+                    else if (en.EnemyType == "Minotaur2" && enemyAnim3.Sheet != null)
+                    {
+                        enemyAnim3.Draw(e.Graphics, en.Rect, !en.FacingRight);
+                    }
+                    else if (en.EnemyType == "Demon" && enemyAnim4.Sheet != null)
+                    {
+                        enemyAnim4.Draw(e.Graphics, en.Rect, !en.FacingRight);
+                    }
+                    else if (en.EnemyType == "Knight" && enemyAnim5.Sheet != null)
+                    {
+                        enemyAnim5.Draw(e.Graphics, en.Rect, !en.FacingRight);
+                    }
+                    else if (en.EnemyType == "Robot" && enemyAnim6.Sheet != null)
+                    {
+                        enemyAnim6.Draw(e.Graphics, en.Rect, !en.FacingRight);
+                    }
+                    else if (en.EnemyType == "Robot_dog" && enemyAnim7.Sheet != null)
+                    {
+                        enemyAnim7.Draw(e.Graphics, en.Rect, !en.FacingRight);
+                    }
+                    else if (en.EnemyType == "Normal" && enemyAnim.Sheet != null)
+                    {
+                        enemyAnim.Draw(e.Graphics, en.Rect, !en.FacingRight);
+                    }
+
                 }
                 else
                 {
@@ -2017,7 +2171,17 @@ namespace LapTrinhTrucQuangProjectTest
                     e.Graphics.DrawString(text2, font2, Brushes.Red, x2, y2);
                 }
             }
+            // VẼ MÀN HÌNH PHÁ ĐẢO: 
+            if (isVictory && PhaDao != null)
+            {                
+                // VẼ ẢNH FULL MÀN HÌNH
+                // Tham số: (Hình ảnh, Tọa độ X, Tọa độ Y, Chiều rộng, Chiều cao)
+                // 0, 0: Bắt đầu từ góc trên cùng bên trái
+                // baseWidth, baseHeight: Kéo dãn ảnh bằng đúng kích thước màn chơi
+                e.Graphics.DrawImage(PhaDao, 0, 0, baseWidth, baseHeight);
+            }
         }
+
 
         // THAY ĐỔI CUỐI CÙNG: Phương thức Dispose để giải phóng tài nguyên
         protected override void Dispose(bool disposing)

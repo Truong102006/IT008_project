@@ -220,7 +220,6 @@
             this.panel193 = new System.Windows.Forms.Panel();
             this.panel174 = new System.Windows.Forms.Panel();
             this.panel194 = new System.Windows.Forms.Panel();
-            this.panel76 = new System.Windows.Forms.Panel();
             this.panel74 = new System.Windows.Forms.Panel();
             this.panel146 = new System.Windows.Forms.Panel();
             this.panel173 = new System.Windows.Forms.Panel();
@@ -297,6 +296,8 @@
             this.panel263 = new System.Windows.Forms.Panel();
             this.panel264 = new System.Windows.Forms.Panel();
             this.panel265 = new System.Windows.Forms.Panel();
+            this.panel266 = new System.Windows.Forms.Panel();
+            this.panel267 = new System.Windows.Forms.Panel();
             this.SuspendLayout();
             // 
             // btnHome
@@ -2144,16 +2145,6 @@
             this.panel194.TabIndex = 128;
             this.panel194.Tag = "coin_4";
             // 
-            // panel76
-            // 
-            this.panel76.BackColor = System.Drawing.Color.SaddleBrown;
-            this.panel76.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.panel76.Location = new System.Drawing.Point(947, 156);
-            this.panel76.Name = "panel76";
-            this.panel76.Size = new System.Drawing.Size(45, 36);
-            this.panel76.TabIndex = 128;
-            this.panel76.Tag = "coin_4";
-            // 
             // panel74
             // 
             this.panel74.BackColor = System.Drawing.Color.SaddleBrown;
@@ -2859,10 +2850,30 @@
             this.panel265.TabIndex = 129;
             this.panel265.Tag = "coin_2";
             // 
+            // panel266
+            // 
+            this.panel266.Location = new System.Drawing.Point(260, 226);
+            this.panel266.Margin = new System.Windows.Forms.Padding(2);
+            this.panel266.Name = "panel266";
+            this.panel266.Size = new System.Drawing.Size(76, 90);
+            this.panel266.TabIndex = 140;
+            this.panel266.Tag = "enemy_6";
+            // 
+            // panel267
+            // 
+            this.panel267.Location = new System.Drawing.Point(870, 167);
+            this.panel267.Margin = new System.Windows.Forms.Padding(2);
+            this.panel267.Name = "panel267";
+            this.panel267.Size = new System.Drawing.Size(76, 90);
+            this.panel267.TabIndex = 140;
+            this.panel267.Tag = "enemy_7";
+            // 
             // MapLevel3
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.panel267);
+            this.Controls.Add(this.panel266);
             this.Controls.Add(this.panel263);
             this.Controls.Add(this.panel260);
             this.Controls.Add(this.panel262);
@@ -3090,7 +3101,6 @@
             this.Controls.Add(this.panel57);
             this.Controls.Add(this.panel193);
             this.Controls.Add(this.panel241);
-            this.Controls.Add(this.panel76);
             this.Controls.Add(this.panel240);
             this.Controls.Add(this.panel250);
             this.Controls.Add(this.panel249);
@@ -3334,7 +3344,6 @@
         private System.Windows.Forms.Panel panel193;
         private System.Windows.Forms.Panel panel174;
         private System.Windows.Forms.Panel panel194;
-        private System.Windows.Forms.Panel panel76;
         private System.Windows.Forms.Panel panel74;
         private System.Windows.Forms.Panel panel146;
         private System.Windows.Forms.Panel panel173;
@@ -3411,5 +3420,7 @@
         private System.Windows.Forms.Panel panel263;
         private System.Windows.Forms.Panel panel264;
         private System.Windows.Forms.Panel panel265;
+        private System.Windows.Forms.Panel panel266;
+        private System.Windows.Forms.Panel panel267;
     }
 }

@@ -200,7 +200,6 @@
             this.panel171 = new System.Windows.Forms.Panel();
             this.panel174 = new System.Windows.Forms.Panel();
             this.panel175 = new System.Windows.Forms.Panel();
-            this.panel182 = new System.Windows.Forms.Panel();
             this.panel165 = new System.Windows.Forms.Panel();
             this.panel169 = new System.Windows.Forms.Panel();
             this.panel170 = new System.Windows.Forms.Panel();
@@ -215,15 +214,24 @@
             this.btnHome = new System.Windows.Forms.Button();
             this.btnContinue = new System.Windows.Forms.Button();
             this.btnReset = new System.Windows.Forms.Button();
-            this.panel194 = new System.Windows.Forms.Panel();
+            this.panel172 = new System.Windows.Forms.Panel();
+            this.panel179 = new System.Windows.Forms.Panel();
+            this.panel180 = new System.Windows.Forms.Panel();
+            this.panel181 = new System.Windows.Forms.Panel();
+            this.panel190 = new System.Windows.Forms.Panel();
+            this.panel193 = new System.Windows.Forms.Panel();
+            this.panel197 = new System.Windows.Forms.Panel();
+            this.panel200 = new System.Windows.Forms.Panel();
+            this.panel201 = new System.Windows.Forms.Panel();
+            this.panel188 = new System.Windows.Forms.Panel();
             this.SuspendLayout();
             // 
             // panel5
             // 
             this.panel5.BackColor = System.Drawing.Color.Yellow;
-            this.panel5.Location = new System.Drawing.Point(899, 70);
+            this.panel5.Location = new System.Drawing.Point(934, 70);
             this.panel5.Name = "panel5";
-            this.panel5.Size = new System.Drawing.Size(170, 360);
+            this.panel5.Size = new System.Drawing.Size(139, 360);
             this.panel5.TabIndex = 2;
             this.panel5.Tag = "door";
             // 
@@ -1782,15 +1790,6 @@
             this.panel175.TabIndex = 31;
             this.panel175.Tag = "tile_48";
             // 
-            // panel182
-            // 
-            this.panel182.BackColor = System.Drawing.Color.SaddleBrown;
-            this.panel182.Location = new System.Drawing.Point(0, 211);
-            this.panel182.Name = "panel182";
-            this.panel182.Size = new System.Drawing.Size(45, 36);
-            this.panel182.TabIndex = 108;
-            this.panel182.Tag = "coin_1";
-            // 
             // panel165
             // 
             this.panel165.BackColor = System.Drawing.Color.SaddleBrown;
@@ -1848,7 +1847,7 @@
             // panel158
             // 
             this.panel158.BackColor = System.Drawing.Color.SaddleBrown;
-            this.panel158.Location = new System.Drawing.Point(831, 248);
+            this.panel158.Location = new System.Drawing.Point(840, 248);
             this.panel158.Name = "panel158";
             this.panel158.Size = new System.Drawing.Size(45, 31);
             this.panel158.TabIndex = 25;
@@ -1857,7 +1856,7 @@
             // panel161
             // 
             this.panel161.BackColor = System.Drawing.Color.SaddleBrown;
-            this.panel161.Location = new System.Drawing.Point(917, 248);
+            this.panel161.Location = new System.Drawing.Point(926, 248);
             this.panel161.Name = "panel161";
             this.panel161.Size = new System.Drawing.Size(45, 31);
             this.panel161.TabIndex = 31;
@@ -1876,7 +1875,7 @@
             // panel187
             // 
             this.panel187.BackColor = System.Drawing.Color.SaddleBrown;
-            this.panel187.Location = new System.Drawing.Point(875, 248);
+            this.panel187.Location = new System.Drawing.Point(884, 248);
             this.panel187.Name = "panel187";
             this.panel187.Size = new System.Drawing.Size(45, 31);
             this.panel187.TabIndex = 31;
@@ -1952,22 +1951,111 @@
             this.btnReset.Visible = false;
             this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
             // 
-            // panel194
+            // panel172
             // 
-            this.panel194.BackColor = System.Drawing.Color.SaddleBrown;
-            this.panel194.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.panel194.Location = new System.Drawing.Point(65, 286);
-            this.panel194.Name = "panel194";
-            this.panel194.Size = new System.Drawing.Size(42, 36);
-            this.panel194.TabIndex = 129;
-            this.panel194.Tag = "coin_4";
+            this.panel172.Location = new System.Drawing.Point(177, 161);
+            this.panel172.Margin = new System.Windows.Forms.Padding(2);
+            this.panel172.Name = "panel172";
+            this.panel172.Size = new System.Drawing.Size(76, 90);
+            this.panel172.TabIndex = 130;
+            this.panel172.Tag = "enemy_2";
+            // 
+            // panel179
+            // 
+            this.panel179.Location = new System.Drawing.Point(327, 161);
+            this.panel179.Margin = new System.Windows.Forms.Padding(2);
+            this.panel179.Name = "panel179";
+            this.panel179.Size = new System.Drawing.Size(76, 90);
+            this.panel179.TabIndex = 130;
+            this.panel179.Tag = "enemy_3";
+            // 
+            // panel180
+            // 
+            this.panel180.Location = new System.Drawing.Point(528, 161);
+            this.panel180.Margin = new System.Windows.Forms.Padding(2);
+            this.panel180.Name = "panel180";
+            this.panel180.Size = new System.Drawing.Size(76, 90);
+            this.panel180.TabIndex = 130;
+            this.panel180.Tag = "enemy_4";
+            // 
+            // panel181
+            // 
+            this.panel181.Location = new System.Drawing.Point(654, 161);
+            this.panel181.Margin = new System.Windows.Forms.Padding(2);
+            this.panel181.Name = "panel181";
+            this.panel181.Size = new System.Drawing.Size(76, 90);
+            this.panel181.TabIndex = 130;
+            this.panel181.Tag = "enemy_5";
+            // 
+            // panel190
+            // 
+            this.panel190.BackColor = System.Drawing.Color.SaddleBrown;
+            this.panel190.Location = new System.Drawing.Point(218, 206);
+            this.panel190.Name = "panel190";
+            this.panel190.Size = new System.Drawing.Size(45, 36);
+            this.panel190.TabIndex = 122;
+            this.panel190.Tag = "coin_5";
+            // 
+            // panel193
+            // 
+            this.panel193.BackColor = System.Drawing.Color.SaddleBrown;
+            this.panel193.Location = new System.Drawing.Point(389, 206);
+            this.panel193.Name = "panel193";
+            this.panel193.Size = new System.Drawing.Size(45, 36);
+            this.panel193.TabIndex = 122;
+            this.panel193.Tag = "coin_5";
+            // 
+            // panel197
+            // 
+            this.panel197.BackColor = System.Drawing.Color.SaddleBrown;
+            this.panel197.Location = new System.Drawing.Point(566, 207);
+            this.panel197.Name = "panel197";
+            this.panel197.Size = new System.Drawing.Size(45, 36);
+            this.panel197.TabIndex = 122;
+            this.panel197.Tag = "coin_5";
+            // 
+            // panel200
+            // 
+            this.panel200.BackColor = System.Drawing.Color.SaddleBrown;
+            this.panel200.Location = new System.Drawing.Point(743, 207);
+            this.panel200.Name = "panel200";
+            this.panel200.Size = new System.Drawing.Size(45, 36);
+            this.panel200.TabIndex = 122;
+            this.panel200.Tag = "coin_5";
+            // 
+            // panel201
+            // 
+            this.panel201.BackColor = System.Drawing.Color.SaddleBrown;
+            this.panel201.Location = new System.Drawing.Point(883, 206);
+            this.panel201.Name = "panel201";
+            this.panel201.Size = new System.Drawing.Size(45, 36);
+            this.panel201.TabIndex = 122;
+            this.panel201.Tag = "coin_5";
+            // 
+            // panel188
+            // 
+            this.panel188.BackColor = System.Drawing.Color.SaddleBrown;
+            this.panel188.Location = new System.Drawing.Point(0, 206);
+            this.panel188.Name = "panel188";
+            this.panel188.Size = new System.Drawing.Size(45, 36);
+            this.panel188.TabIndex = 122;
+            this.panel188.Tag = "coin_5";
             // 
             // MapLevel2
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.Controls.Add(this.panel194);
+            this.Controls.Add(this.panel201);
+            this.Controls.Add(this.panel200);
+            this.Controls.Add(this.panel197);
+            this.Controls.Add(this.panel193);
+            this.Controls.Add(this.panel188);
+            this.Controls.Add(this.panel190);
+            this.Controls.Add(this.panel181);
+            this.Controls.Add(this.panel180);
+            this.Controls.Add(this.panel179);
+            this.Controls.Add(this.panel172);
             this.Controls.Add(this.btnReset);
             this.Controls.Add(this.btnContinue);
             this.Controls.Add(this.btnHome);
@@ -1991,7 +2079,6 @@
             this.Controls.Add(this.panel143);
             this.Controls.Add(this.panel142);
             this.Controls.Add(this.panel149);
-            this.Controls.Add(this.panel182);
             this.Controls.Add(this.panel137);
             this.Controls.Add(this.panel141);
             this.Controls.Add(this.panel136);
@@ -2337,7 +2424,6 @@
         private System.Windows.Forms.Panel panel171;
         private System.Windows.Forms.Panel panel174;
         private System.Windows.Forms.Panel panel175;
-        private System.Windows.Forms.Panel panel182;
         private System.Windows.Forms.Panel panel165;
         private System.Windows.Forms.Panel panel169;
         private System.Windows.Forms.Panel panel170;
@@ -2352,6 +2438,15 @@
         private System.Windows.Forms.Button btnHome;
         private System.Windows.Forms.Button btnContinue;
         private System.Windows.Forms.Button btnReset;
-        private System.Windows.Forms.Panel panel194;
+        private System.Windows.Forms.Panel panel172;
+        private System.Windows.Forms.Panel panel179;
+        private System.Windows.Forms.Panel panel180;
+        private System.Windows.Forms.Panel panel181;
+        private System.Windows.Forms.Panel panel190;
+        private System.Windows.Forms.Panel panel193;
+        private System.Windows.Forms.Panel panel197;
+        private System.Windows.Forms.Panel panel200;
+        private System.Windows.Forms.Panel panel201;
+        private System.Windows.Forms.Panel panel188;
     }
 }
