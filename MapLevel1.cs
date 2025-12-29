@@ -1519,16 +1519,16 @@ namespace LapTrinhTrucQuangProjectTest
             // Thêm nút S để đi xuống
             if (e.KeyCode == Keys.S) goDown = true;
 
-            //// bấm nút i thì sẽ chuyển tới màn thứ i ( khi xong game sẽ xóa tính năng này )
-            //for (int i = 1; i <= 4; i++)
-            //{
-            //    Keys key = (Keys)((int)Keys.D0 + i);
-            //    if (e.KeyCode == key)
-            //    {
-            //        currentLevel = i;
-            //        LoadLevel(i);
-            //    }
-            //}
+            // bấm nút i thì sẽ chuyển tới màn thứ i ( khi xong game sẽ xóa tính năng này )
+            for (int i = 1; i <= 4; i++)
+            {
+                Keys key = (Keys)((int)Keys.D0 + i);
+                if (e.KeyCode == key)
+                {
+                    currentLevel = i;
+                    LoadLevel(i);
+                }
+            }
         }
 
         private void MapLevel1_Load_1(object sender, EventArgs e)

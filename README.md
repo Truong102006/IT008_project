@@ -9,8 +9,24 @@
 ---
 
 ## 📸 Hình ảnh Demo
-> *Sẽ update sau ( Vì đồ án vẫn đang trong quá trình hoàn thiện)*
+### 🖥️ Giao diện chính & Màn hình chờ
+| Màn hình chính | Màn hình chờ (Loading) |
+| :---: | :---: |
+| ![Main Menu](Screenshots/mainmenu.png) | ![Loading](Screenshots/loading.png) |
 
+### 🕹️ Trải nghiệm trong Game
+| Map 1: Rừng rậm |
+| :---: |
+| ![Level 1](Screenshots/map1.png) |
+| Map 2: Lâu đài hắc ám |
+| :---: |
+| ![Level 2](Screenshots/map2.png) |
+| Map 3: Nhà máy |
+| :---: |
+| ![Level 3](Screenshots/map3.png) |
+| Map 4: Rừng quỷ (Map Boss) |
+| :---: |
+| ![Level 4](Screenshots/map4.png) |
 ---
 
 ## ✨ Các tính năng chính
